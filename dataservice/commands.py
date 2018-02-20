@@ -28,6 +28,15 @@ def erd():
 
 
 @click.command()
+def import_data():
+    """
+    ETL real data to database
+    """
+    from dataservice.util.data_import import main
+    main.run('seidman')
+
+
+@click.command()
 def populate_db():
     """
     Run the dummy data generator

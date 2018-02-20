@@ -102,6 +102,7 @@ def register_commands(app):
     app.cli.add_command(commands.erd)
     app.cli.add_command(commands.populate_db)
     app.cli.add_command(commands.clear_db)
+    app.cli.add_command(commands.import_data)
 
 
 def register_extensions(app):
