@@ -10,8 +10,10 @@ def dropna_rows_cols(df_func):
         # None or empty df
         try:
             if df.empty:
+                print('Cannot perform dropna_rows_cols since df is empty')
                 return df
         except AttributeError:
+            print('Cannot perform dropna_rows_cols since df is None')
             return df
 
         # Rows
@@ -36,8 +38,10 @@ def reformat_column_names(df_func):
         # None or empty df
         try:
             if df.empty:
+                print('Cannot perform reformat_column_names since df is empty')
                 return df
         except AttributeError:
+            print('Cannot perform reformat_column_names since df is None')
             return df
         df.columns = map((lambda x: x.replace(" ", "_").lower()),
                          df.columns)

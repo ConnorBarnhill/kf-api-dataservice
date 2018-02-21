@@ -30,6 +30,19 @@ mappings_dict = {
         "father": {COL_NAME: "father"},
         "_unique_id_col": {COL_VALUE: "famid"}
     },
+    "phenotype": {
+        "age_at_event_days": {COL_NAME: "age_at_event_days"},
+        "phenotype": {COL_NAME: "phenotype"},
+        "hpo_id": None,
+        "observed": {COL_NAME: "observed"},
+        "_links": {
+            'participant': {
+                'fk_col': {COL_VALUE: 'participant_id'},
+                'link_key': {COL_NAME: "subjid"}
+            }
+        },
+        "_unique_id_col": {COL_VALUE: "phenotype_id"}
+    },
     "demographic": {
         "ethnicity": {COL_NAME: "ethnicity",
                       COL_VALUE: {"Yes": "hispanic or latino",
