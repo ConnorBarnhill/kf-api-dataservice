@@ -1,9 +1,11 @@
 import os
+from importlib import import_module
 from pprint import pprint
 
 from dataservice.extensions import db
 from dataservice import create_app
 
+from dataservice.util.data_import.utils import to_camel_case
 from dataservice.api.study.models import Study
 from dataservice.api.participant.models import Participant
 from dataservice.api.family_relationship.models import FamilyRelationship
@@ -19,6 +21,17 @@ from dataservice.api.workflow.models import (
     Workflow,
     WorkflowGenomicFile
 )
+
+ENTITY_TYPES = [
+    'study',
+    'participant',
+    'family_relationship',
+    'demographic',
+    'diagnosis',
+    'sample',
+    'aliquot',
+    'sequencing_experiment'
+]
 
 
 class BaseLoader(object):
@@ -48,26 +61,28 @@ class BaseLoader(object):
         db.drop_all()
         self.app_context.pop()
 
-    def run(self, entity_dict, entity_types=None):
+    def run(self, entity_dict, entity_types=ENTITY_TYPES):
         """
         Load all entities into db
         """
-        # Create study
-        self._create_entities(Study, entity_dict)
-        # Create participants
-        self._create_entities(Participant, entity_dict)
+        skip_entities = ['family_relationship']
+        # For each entity type
+        for entity_type in entity_types:
+            # Skip some entities
+            if entity_type in skip_entities:
+                continue
+            # Dynamically import entity model class
+            model_name = to_camel_case(entity_type)
+            model_module_path = 'dataservice.api.{}.models'.format(
+                entity_type)
+            models_module = import_module(model_module_path)
+            model = getattr(models_module, model_name)
+
+            # Create all entity objects and save to db
+            self._create_entities(model, entity_dict)
+
         # Create family relationships
         self._create_family_relationships(entity_dict)
-        # Create demographics
-        self._create_entities(Demographic, entity_dict)
-        # Create diagnoses
-        self._create_entities(Diagnosis, entity_dict)
-        # Create samples
-        self._create_entities(Sample, entity_dict)
-        # Create aliquot
-        self._create_entities(Aliquot, entity_dict)
-        # Create sequencing_experiment
-        self._create_entities(SequencingExperiment, entity_dict)
 
     def _create_entities(self, entity_model, entity_dict):
         """
@@ -115,7 +130,7 @@ class BaseLoader(object):
         """
         print('Loading {}s ...'.format('family_relationship'))
 
-        families = entity_dict['family']
+        families = entity_dict['family_relationship']
         for family in families:
             # Mother
             mother_id = self._get_kf_id('participant', family['mother'])
