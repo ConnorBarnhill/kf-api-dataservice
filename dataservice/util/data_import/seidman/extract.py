@@ -235,7 +235,7 @@ class Extractor(object):
         # TODO
         pass
 
-    def build_participant_df(self):
+    def build_dfs(self):
         """
         Read in all entities and join into a single table
         representing all participant data
@@ -287,24 +287,25 @@ class Extractor(object):
         df4.head()
 
         # Merge Sequencing Experiment
-        participant_df = pd.merge(df4, seq_exp_df,
-                                  left_on='external_id',
-                                  right_on='sample_name')
-        # Add study to df
-        cols = study_df.columns.tolist()
-        row = study_df.iloc[0]
-        for col in cols:
-            participant_df[col] = row[col]
+        full_participant_df = pd.merge(df4, seq_exp_df,
+                                       left_on='external_id',
+                                       right_on='sample_name')
+        # Add study to full participant df
+        self._add_study_cols(study_df, full_participant_df)
 
+        # Basic participant df
+        participant_df = self._add_study_cols(study_df, family_df)
+
+        # Dict to store dfs for each entity
         entity_dfs = {
-            'participant': self._add_study_cols(study_df, family_df),
-            'default': participant_df
+            'participant': participant_df,
+            'default': full_participant_df
         }
 
         return entity_dfs
 
     def _add_study_cols(self, study_df, df):
-        # Add study to df
+        # Add study cols to a df
         cols = study_df.columns.tolist()
         row = study_df.iloc[0]
         for col in cols:
@@ -315,4 +316,4 @@ class Extractor(object):
         """
         Run extraction and return a Pandas DataFrame
         """
-        return self.build_participant_df()
+        return self.build_dfs()
