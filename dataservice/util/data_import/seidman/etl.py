@@ -5,6 +5,7 @@ from dataservice.util.data_import.seidman.transform import Transformer
 from dataservice.util.data_import.seidman.load import Loader
 
 ENTITY_TYPES = [
+    'study',
     'participant',
     'family',
     'demographic',
@@ -19,12 +20,11 @@ def run():
     # Extract and combine data
     e = Extractor()
     df = e.run()
-    # df.to_csv('test.csv')
 
     # Transform from dataframe to dicts
     t = Transformer()
     content = t.run(df, ENTITY_TYPES)
-    pprint(content)
+    # pprint(content)
 
     # Load into db via sqlalchemy
     l = Loader()

@@ -1,9 +1,3 @@
-# from seidman import etl
-#
-#
-# if __name__ == '__main__':
-#     etl.run()
-
 from importlib import import_module
 
 

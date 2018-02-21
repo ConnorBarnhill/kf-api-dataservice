@@ -9,7 +9,7 @@ class BaseTransformer(object):
             mapper = Mapper(mappings_dict)
         self.mapper = mapper
 
-    def run(self, data_df, entity_type_list, nrows=None):
+    def run(self, entity_dfs, entity_type_list, nrows=None):
         """
         Transform dataframe into a collection of dicts
         """
@@ -18,8 +18,7 @@ class BaseTransformer(object):
         # For each entity type
         for entity_type in entity_type_list:
             # Get unique entities
-            df = self._get_entity_df(entity_type, data_df)
-
+            df = self._get_entity_df(entity_type, entity_dfs)
             # None or empty df
             try:
                 if df.empty:
@@ -48,10 +47,11 @@ class BaseTransformer(object):
 
         return entity_dict
 
-    def _get_entity_df(self, entity_type, data_df):
+    def _get_entity_df(self, entity_type, entity_dfs):
         """
         Extract subset of dataframe by entity_type and unique id of the entity
         """
+        data_df = entity_dfs.get(entity_type, entity_dfs['default'])
         _id = self.mapper.get_id_col(entity_type)
 
         if _id and _id in data_df.columns:
