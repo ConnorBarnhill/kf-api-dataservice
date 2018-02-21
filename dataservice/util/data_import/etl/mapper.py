@@ -19,7 +19,7 @@ class Mapper(object):
 
     def build_entity(self, entity_type, row):
         """
-        Transform a csv row into a dict using the mapping dict and schema dict
+        Transform a dataframe row into a dict using the mappings dict
         """
         mapping = self.mappings.get(entity_type)
 
@@ -27,7 +27,7 @@ class Mapper(object):
         entity = deepcopy(mapping)
         self._map(row, None, None, entity)
 
-        # Add unique id (needed for loading)
+        # Add unique id col (needed later for loading)
         unique_id_col = self.get_id_col(entity_type)
         entity['_unique_id_val'] = row[unique_id_col]
 
@@ -108,6 +108,10 @@ class Mapper(object):
             return in_value
 
     def get_id_col(self, entity_type):
+        """
+        Get the unique id column specified in mappings dict for this
+        entity_type
+        """
         _id = None
         entity_mapping = self.mappings.get(entity_type)
         if entity_mapping:
@@ -116,9 +120,3 @@ class Mapper(object):
                 _id = col[COL_VALUE]
 
         return _id
-
-    def del_id_col(self, entity_type):
-        entity_mapping = self.mappings.get(entity_type)
-        if entity_mapping:
-            if '_unique_id_col' in entity_mapping:
-                del entity_mapping['_unique_id_col']

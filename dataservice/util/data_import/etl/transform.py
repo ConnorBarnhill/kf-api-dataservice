@@ -11,7 +11,12 @@ class BaseTransformer(object):
 
     def run(self, entity_dfs, entity_type_list, nrows=None):
         """
-        Transform dataframe into a collection of dicts
+        For each entity_type:
+        Transform the entity dataframe into a collection of dicts
+
+        Each row will be transformed into a dict
+        Column names are mapped to dict keys
+        Column values are filled in to dict values
         """
         entity_dict = {}
 
@@ -31,9 +36,10 @@ class BaseTransformer(object):
 
             # For each row in df
             entities = []
+            # Use a count var since idx will not always be in
+            # chronological order
             count = 0
             for idx, row in df.iterrows():
-                # print(row)
                 # Only process nrows (for debugging purposes)
                 if (nrows is not None) and (count >= nrows):
                     break
@@ -51,9 +57,13 @@ class BaseTransformer(object):
         """
         Extract subset of dataframe by entity_type and unique id of the entity
         """
+        # Get original entity dataframe
         data_df = entity_dfs.get(entity_type, entity_dfs['default'])
+
+        # Get the unique id column for this dataframe
         _id = self.mapper.get_id_col(entity_type)
 
+        # Filter dataframe down to unique rows using unique id
         if _id and _id in data_df.columns:
             df = data_df.drop_duplicates(_id)
         else:
