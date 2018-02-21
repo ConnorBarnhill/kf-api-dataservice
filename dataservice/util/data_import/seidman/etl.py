@@ -7,7 +7,7 @@ from dataservice.util.data_import.seidman.load import Loader
 ENTITY_TYPES = [
     'study',
     'participant',
-    'family',
+    'family_relationship',
     'demographic',
     'diagnosis',
     'sample',
@@ -28,4 +28,4 @@ def run():
 
     # Load into db via sqlalchemy
     l = Loader()
-    l.run(content)
+    l.run(content, ENTITY_TYPES)

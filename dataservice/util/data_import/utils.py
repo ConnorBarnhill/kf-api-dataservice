@@ -44,3 +44,11 @@ def reformat_column_names(df_func):
         return df
 
     return wrapper
+
+
+def to_camel_case(snake_str):
+    """
+    Convert snake case str to camel case
+    """
+    words = snake_str.split('_')
+    return ''.join([w.title() for w in words])
