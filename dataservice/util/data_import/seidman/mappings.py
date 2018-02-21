@@ -4,17 +4,31 @@ COL_VALUE = "$col_value"
 COL_TYPE = "$col_type"
 
 mappings_dict = {
+    "study": {
+        'data_access_authority': {COL_NAME: 'data_access_authority'},
+        'external_id': {COL_NAME: 'study_id'},
+        'version': {COL_NAME: 'study_version'},
+        'name': {COL_NAME: 'study_name'},
+        'attribution': {COL_NAME: 'attribution'},
+        "_unique_id_col": {COL_VALUE: "study_id"},
+    },
     "participant": {
         "external_id": {COL_NAME: "subjid"},
         "is_proband": {COL_NAME: "is_proband"},
         "family_id": {COL_NAME: "famid"},
-        "_unique_id_col": {COL_VALUE: "subjid"}
+        "_unique_id_col": {COL_VALUE: "subjid"},
+        "_links": {
+            'study': {
+                'fk_col': {COL_VALUE: 'study_id'},
+                'link_key': {COL_NAME: "study_id"}
+            }
+        }
     },
     "family": {
         "proband": {COL_NAME: "subjid"},
         "mother": {COL_NAME: "mother"},
         "father": {COL_NAME: "father"},
-        "_unique_id_col": {COL_VALUE: "subjid"}
+        "_unique_id_col": {COL_VALUE: "famid"}
     },
     "demographic": {
         "ethnicity": {COL_NAME: "ethnicity",
