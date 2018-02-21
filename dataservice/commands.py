@@ -28,12 +28,16 @@ def erd():
 
 
 @click.command()
-def import_data():
+@click.argument('etl_module_name')
+def import_data(etl_module_name):
     """
     ETL real data to database
+
+    Arg: etl_module_name is the name of the python module to run in the
+    dataservice.util.data_import package. Example: 'seidman'
     """
     from dataservice.util.data_import import main
-    main.run('seidman')
+    main.run(etl_module_name)
 
 
 @click.command()
