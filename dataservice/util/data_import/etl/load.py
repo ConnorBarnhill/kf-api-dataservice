@@ -80,9 +80,11 @@ class BaseLoader(object):
 
             # Create all entity objects and save to db
             self._create_entities(model, entity_dict)
+            print('Completed loading {}'.format(entity_type))
 
         # Create family relationships
-        self._create_family_relationships(entity_dict)
+        if 'family_relationship' not in skip_entities:
+            self._create_family_relationships(entity_dict)
 
     def _create_entities(self, entity_model, entity_dict):
         """
@@ -96,7 +98,9 @@ class BaseLoader(object):
         # For all entities of entity_type
         _ids = []
         entities = []
-        for params in entity_dict[entity_type]:
+        for i, params in enumerate(entity_dict[entity_type]):
+            print('\tLoading {} # {}'.format(entity_type, i))
+
             # Save ids
             _ids.append(params['_unique_id_val'])
 
@@ -117,11 +121,15 @@ class BaseLoader(object):
             entities.append(entity_model(**params))
 
         # Add to session, save to database
-        db.session.add_all(entities)
-        db.session.commit()
+        if entities:
+            print('Adding {}s to the session'.format(entity_type))
+            db.session.add_all(entities)
+            print('Begin commit of {} {}s to db'.format(len(entities),
+                                                        entity_type))
+            db.session.commit()
 
-        # Save kids first ids
-        self._save_kf_ids(_ids, entity_type, entities)
+            # Save kids first ids
+            self._save_kf_ids(_ids, entity_type, entities)
 
     def _create_family_relationships(self, entity_dict):
         """

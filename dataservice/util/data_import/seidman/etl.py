@@ -7,12 +7,13 @@ from dataservice.util.data_import.seidman.load import Loader
 ENTITY_TYPES = [
     'study',
     'participant',
-    'family_relationship',
-    'demographic',
-    'diagnosis',
-    'sample',
-    'aliquot',
-    'sequencing_experiment'
+    'phenotype'
+    # 'family_relationship',
+    # 'demographic',
+    # 'diagnosis',
+    # 'sample',
+    # 'aliquot',
+    # 'sequencing_experiment'
 ]
 
 
@@ -24,8 +25,8 @@ def run():
     # Transform from dataframe to dicts
     t = Transformer()
     content = t.run(df, ENTITY_TYPES)
-    # pprint(content)
-
+    # # pprint(content)
+    #
     # Load into db via sqlalchemy
     l = Loader()
-    l.run(content, ENTITY_TYPES)
+    l.run(content, entity_types=ENTITY_TYPES)

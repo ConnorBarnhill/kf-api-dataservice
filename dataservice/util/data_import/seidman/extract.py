@@ -49,6 +49,54 @@ class Extractor(object):
 
     @reformat_column_names
     @dropna_rows_cols
+    def read_phenotype_data(self, filepath=None):
+        """
+        Read phenotype data
+        """
+        if not filepath:
+            filepath = os.path.join(
+                DBGAP_DIR,
+                '3a_dbGaP_SubjectPhenotypes_ExtracardiacFindingsDS.txt')
+
+        # Read csv
+        df = pd.read_csv(filepath,
+                         delimiter='\t',
+                         dtype={'SUBJID': str})
+
+        # Convert age years to days
+        df["LATEST_EXAM_AGE"] = df["LATEST_EXAM_AGE"].apply(
+            lambda x: float(x) * 365)
+
+        # Delete extra column
+        del df['AGE_AT_FORM_COMPLETION']
+
+        # Make all values lower case
+        for col in df.columns.tolist():
+            df[col] = df[col].apply(lambda x: str(x).lower())
+
+        # Reshape to build the phenotypes df
+        phenotype_cols = df.columns.tolist()[2:]
+        phenotype_df = pd.melt(df, id_vars='SUBJID', value_vars=phenotype_cols,
+                               var_name='phenotype', value_name='value')
+
+        # Create observed column
+        def func(row):
+            observed = 'positive'
+            negative_values = ['nan', 'none', 'not reported',
+                               'not applicable', 'unknown', 'no/not checked']
+            if row['value'] in negative_values:
+                observed = 'negative'
+            return observed
+
+        phenotype_df['observed'] = phenotype_df.apply(func, axis=1)
+
+        def func(row): return "_".join(['phenotype', str(row.name)])
+        phenotype_df['phenotype_id'] = phenotype_df.apply(func, axis=1)
+
+        return phenotype_df
+
+    @reformat_column_names
+    @dropna_rows_cols
     def read_gender_data(self, filepath=None):
         """
         Read gender data for all participants
@@ -229,12 +277,6 @@ class Extractor(object):
 
         return df
 
-    @reformat_column_names
-    @dropna_rows_cols
-    def read_phenotype_data(self):
-        # TODO
-        pass
-
     def build_dfs(self):
         """
         Read in all entities and join into a single table
@@ -248,6 +290,9 @@ class Extractor(object):
 
         # Gender
         gender_df = self.read_gender_data()
+
+        # Phenotype
+        phenotype_df = self.read_phenotype_data()
 
         # Demographic
         demographic_df = self.read_demographic_data()
@@ -270,21 +315,17 @@ class Extractor(object):
 
         # Merge Family
         df1 = pd.merge(gender_demo_df, family_df, on='subjid')
-        df1.head()
 
         # Merge Diagnosis
         df2 = pd.merge(df1, diagnosis_df, on='subjid')
-        df2.head()
 
         # Merge Sample
         df3 = pd.merge(df2, participant_sample_df, on='subjid')
-        df3.head()
 
         # Merge Aliquot
         df4 = pd.merge(df3, aliquot_df,
                        left_on='sampid',
                        right_on='external_id')
-        df4.head()
 
         # Merge Sequencing Experiment
         full_participant_df = pd.merge(df4, seq_exp_df,
@@ -296,9 +337,14 @@ class Extractor(object):
         # Basic participant df
         participant_df = self._add_study_cols(study_df, family_df)
 
+        # Phenotype df
+        phenotype_participant_df = pd.merge(phenotype_df, participant_df,
+                                            on='subjid')
+
         # Dict to store dfs for each entity
         entity_dfs = {
             'participant': participant_df,
+            'phenotype': phenotype_participant_df,
             'default': full_participant_df
         }
 
