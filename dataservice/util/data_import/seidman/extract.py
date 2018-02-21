@@ -15,6 +15,19 @@ class Extractor(object):
 
     @reformat_column_names
     @dropna_rows_cols
+    def read_study_data(self, filepath=None):
+        """
+        Read study data
+        """
+        if not filepath:
+            filepath = os.path.join(DBGAP_DIR,
+                                    'study.txt')
+        df = pd.read_csv(filepath)
+
+        return df
+
+    @reformat_column_names
+    @dropna_rows_cols
     def read_family_data(self, filepath=None):
         """
         Read family data for all participants
@@ -227,6 +240,9 @@ class Extractor(object):
         Read in all entities and join into a single table
         representing all participant data
         """
+        # Study
+        study_df = self.read_study_data()
+
         # Family
         family_df = self.read_family_data()
 
@@ -274,7 +290,26 @@ class Extractor(object):
         participant_df = pd.merge(df4, seq_exp_df,
                                   left_on='external_id',
                                   right_on='sample_name')
-        return participant_df
+        # Add study to df
+        cols = study_df.columns.tolist()
+        row = study_df.iloc[0]
+        for col in cols:
+            participant_df[col] = row[col]
+
+        entity_dfs = {
+            'participant': self._add_study_cols(study_df, family_df),
+            'default': participant_df
+        }
+
+        return entity_dfs
+
+    def _add_study_cols(self, study_df, df):
+        # Add study to df
+        cols = study_df.columns.tolist()
+        row = study_df.iloc[0]
+        for col in cols:
+            df[col] = row[col]
+        return df
 
     def run(self):
         """
