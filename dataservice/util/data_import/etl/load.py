@@ -48,11 +48,16 @@ class BaseLoader(object):
         db.drop_all()
         self.app_context.pop()
 
-    def run(self, entity_dict):
+    def run(self, entity_dict, entity_types=None):
+        """
+        Load all entities into db
+        """
         # Create study
-        self._create_study()
+        self._create_entities(Study, entity_dict)
         # Create participants
-        self._create_participants(entity_dict)
+        self._create_entities(Participant, entity_dict)
+        # Create family relationships
+        self._create_family_relationships(entity_dict)
         # Create demographics
         self._create_entities(Demographic, entity_dict)
         # Create diagnoses
@@ -64,63 +69,14 @@ class BaseLoader(object):
         # Create sequencing_experiment
         self._create_entities(SequencingExperiment, entity_dict)
 
-    def _create_study(self, **kwargs):
-        """
-        Create study
-        """
-        # Study
-        # https://www.ncbi.nlm.nih.gov/projects/gap/cgi-bin/study.cgi?study_id=phs001138.v1.p2
-        kwargs = {
-            'data_access_authority': 'dbGaP',
-            'external_id': 'phs001138',
-            'version': 'v1.p2',
-            'name': 'National Heart, Lung, and Blood Institute (NHLBI)'
-            'Bench to Bassinet Program: The Gabriella Miller Kids First'
-            'Pediatric Research Program of the Pediatric Cardiac Genetics'
-            'Consortium (PCGC)',
-            'attribution': 'https://www.ncbi.nlm.nih.gov/projects/gap/cgi-bin/'
-            'GetAcknowledgementStatement.cgi?study_id=phs001138.v1.p2'
-        }
-        study = Study(**kwargs)
-
-        # Save to db
-        db.session.add(study)
-        db.session.commit()
-
-        self.entity_id_map['study'] = {kwargs['external_id']: study.kf_id}
-
-    def _create_participants(self, entity_dict):
-        """
-        Create and save participants to db
-        """
-        # Get study id
-        study_id = self.entity_id_map['study']['phs001138']
-
-        # Create and save participants
-        _ids = []
-        participants = []
-        for params in entity_dict['participant']:
-            # Save ids
-            _ids.append(params['_unique_id_val'])
-            # Remove the private keys which were only needed for linking
-            self._remove_extra_keys(params)
-
-            # Add study id
-            params['study_id'] = study_id
-            participants.append(Participant(**params))
-
-        # Save to db
-        db.session.add_all(participants)
-        db.session.commit()
-
-        self._save_kf_ids(_ids, 'participant', participants)
-
     def _create_entities(self, entity_model, entity_dict):
         """
         Create and save entities of a particular type to db
         """
         # Get entity type from model class name
         entity_type = entity_model.__tablename__
+
+        print('Loading {}s ...'.format(entity_type))
 
         # For all entities of entity_type
         _ids = []
@@ -154,19 +110,52 @@ class BaseLoader(object):
 
     def _create_family_relationships(self, entity_dict):
         """
-        Create family relationships for a proband, mother, and father
+        Create and save family relationships for a proband
+        Relationships are: mother - proband and father - proband
         """
-        pass
+        print('Loading {}s ...'.format('family_relationship'))
+
+        families = entity_dict['family']
+        for family in families:
+            # Mother
+            mother_id = self._get_kf_id('participant', family['mother'])
+            # Father
+            father_id = self._get_kf_id('participant', family['father'])
+            # Proband
+            proband_id = self._get_kf_id('participant', family['proband'])
+
+            r1 = FamilyRelationship(participant_id=mother_id,
+                                    relative_id=proband_id,
+                                    participant_to_relative_relation='mother')
+
+            r2 = FamilyRelationship(participant_id=father_id,
+                                    relative_id=proband_id,
+                                    participant_to_relative_relation='father')
+            db.session.add_all([r1, r2])
+        db.session.commit()
+
+    def _get_kf_id(self, entity_type, key):
+        return self.entity_id_map[entity_type].get(str(key))
 
     def _save_kf_ids(self, _ids, entity_type, entities):
+        """
+        Add to entity id map which maps original unique id in entity table
+        to kf_id
+        """
         # Save kf ids
         if self.entity_id_map.get(entity_type) is None:
             self.entity_id_map[entity_type] = {}
 
         for i, entity_obj in enumerate(entities):
-            self.entity_id_map[entity_type][_ids[i]] = entity_obj.kf_id
+            self.entity_id_map[entity_type][str(_ids[i])] = entity_obj.kf_id
 
     def _remove_extra_keys(self, params):
+        """
+        Remove private keys from kwargs dict.
+
+        Private keys were only needed for linking entities and should
+        not stay in the model's kwargs (params)
+        """
         keys = ['_unique_id_val', '_unique_id_col', '_links']
         for k in keys:
             params.pop(k, None)
