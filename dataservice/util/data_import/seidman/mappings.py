@@ -24,7 +24,7 @@ mappings_dict = {
             }
         }
     },
-    "family": {
+    "family_relationship": {
         "proband": {COL_NAME: "subjid"},
         "mother": {COL_NAME: "mother"},
         "father": {COL_NAME: "father"},
