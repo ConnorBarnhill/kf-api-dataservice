@@ -19,14 +19,19 @@ ENTITY_TYPES = [
 
 def run():
     # Extract and combine data
+    print('Begin extraction ...')
     e = Extractor()
     df = e.run()
+    print('Completed extraction\n')
 
     # Transform from dataframe to dicts
+    print('Begin transformation ...')
     t = Transformer()
     content = t.run(df, ENTITY_TYPES)
-    # # pprint(content)
-    #
+    print('Completed transformation\n')
+
     # Load into db via sqlalchemy
+    print('Begin loading ...')
     l = Loader()
     l.run(content, entity_types=ENTITY_TYPES)
+    print('Completed loading\n')

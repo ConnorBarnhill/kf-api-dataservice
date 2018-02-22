@@ -49,7 +49,7 @@ class Extractor(object):
 
     @reformat_column_names
     @dropna_rows_cols
-    def read_phenotype_data(self, filepath=None):
+    def create_phenotype_data(self, filepath=None):
         """
         Read phenotype data
         """
@@ -78,8 +78,8 @@ class Extractor(object):
         phenotype_cols = df.columns.tolist()[2:]
         phenotype_df = pd.melt(df, id_vars='SUBJID', value_vars=phenotype_cols,
                                var_name='phenotype', value_name='value')
-
         # Create observed column
+
         def func(row):
             observed = 'positive'
             negative_values = ['nan', 'none', 'not reported',
@@ -94,6 +94,19 @@ class Extractor(object):
         phenotype_df['phenotype_id'] = phenotype_df.apply(func, axis=1)
 
         return phenotype_df
+
+    def read_phenotype_data(self, filepath=None):
+        if not filepath:
+            filepath = os.path.join(DBGAP_DIR, 'phenotypes.txt')
+
+        if not os.path.isfile(filepath):
+            df = self.create_phenotype_data()
+            # Write to file
+            df.to_csv(filepath)
+        else:
+            df = pd.read_csv(filepath, dtype={'subjid': str})
+
+        return df
 
     @reformat_column_names
     @dropna_rows_cols

@@ -27,9 +27,12 @@ class BaseTransformer(object):
             # None or empty df
             try:
                 if df.empty:
+                    print('Extraction failed: no {}s in dataframe'.
+                          format(entity_type))
                     continue
             except AttributeError:
-                print('Could not extract df for entity {}'.format(entity_type))
+                print('Extraction failed for entity {}, dataframe was {}'
+                      .format(entity_type, df))
                 continue
 
             print("Entity {} shape {}".format(entity_type, df.shape))
