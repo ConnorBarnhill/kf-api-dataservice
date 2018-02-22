@@ -15,13 +15,39 @@ class Extractor(object):
 
     @reformat_column_names
     @dropna_rows_cols
+    def read_study_file_data(self, filepaths=None):
+        """
+        Read in raw study files
+        """
+        if not filepaths:
+            filepaths = os.listdir(DBGAP_DIR)
+
+        study_files = [{"study_file_name": f}
+                       for f in filepaths if 'dbGaP' in f]
+        return pd.DataFrame(study_files)
+
+    @reformat_column_names
+    @dropna_rows_cols
     def read_study_data(self, filepath=None):
         """
         Read study data
         """
         if not filepath:
-            filepath = os.path.join(DBGAP_DIR,
+            filepath = os.path.join(DATA_DIR,
                                     'study.txt')
+        df = pd.read_csv(filepath)
+
+        return df
+
+    @reformat_column_names
+    @dropna_rows_cols
+    def read_investigator_data(self, filepath=None):
+        """
+        Read investigator data
+        """
+        if not filepath:
+            filepath = os.path.join(DATA_DIR,
+                                    'investigator.txt')
         df = pd.read_csv(filepath)
 
         return df
@@ -97,7 +123,7 @@ class Extractor(object):
 
     def read_phenotype_data(self, filepath=None):
         if not filepath:
-            filepath = os.path.join(DBGAP_DIR, 'phenotypes.txt')
+            filepath = os.path.join(DATA_DIR, 'phenotypes.txt')
 
         if not os.path.isfile(filepath):
             df = self.create_phenotype_data()
@@ -295,8 +321,14 @@ class Extractor(object):
         Read in all entities and join into a single table
         representing all participant data
         """
+        # Investigator
+        investigator_df = self.read_investigator_data()
+
         # Study
         study_df = self.read_study_data()
+
+        # Study
+        study_files_df = self.read_study_file_data()
 
         # Family
         family_df = self.read_family_data()
@@ -344,11 +376,18 @@ class Extractor(object):
         full_participant_df = pd.merge(df4, seq_exp_df,
                                        left_on='external_id',
                                        right_on='sample_name')
+
         # Add study to full participant df
         self._add_study_cols(study_df, full_participant_df)
 
-        # Basic participant df
+        # Add study to basic participant df
         participant_df = self._add_study_cols(study_df, family_df)
+
+        # Add study to investigator df
+        study_investigator_df = self._add_study_cols(study_df, investigator_df)
+
+        # Add study to study files df
+        study_study_files_df = self._add_study_cols(study_df, study_files_df)
 
         # Phenotype df
         phenotype_participant_df = pd.merge(phenotype_df, participant_df,
@@ -356,6 +395,9 @@ class Extractor(object):
 
         # Dict to store dfs for each entity
         entity_dfs = {
+            'study': study_investigator_df,
+            'study_file': study_study_files_df,
+            'investigator': investigator_df,
             'participant': participant_df,
             'phenotype': phenotype_participant_df,
             'default': full_participant_df
