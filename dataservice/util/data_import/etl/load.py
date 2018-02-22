@@ -36,8 +36,7 @@ class BaseLoader(object):
         self.app = create_app(config_name)
         self.app_context = self.app.app_context()
         self.app_context.push()
-        # TODO - remove
-        db.drop_all()
+        # db.drop_all()
         db.create_all()
 
     def drop_all(self):
