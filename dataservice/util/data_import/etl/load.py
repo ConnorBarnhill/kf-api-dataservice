@@ -6,23 +6,9 @@ from dataservice.extensions import db
 from dataservice import create_app
 
 from dataservice.util.data_import.utils import to_camel_case
-from dataservice.api.study.models import Study
-from dataservice.api.participant.models import Participant
 from dataservice.api.family_relationship.models import FamilyRelationship
-from dataservice.api.demographic.models import Demographic
-from dataservice.api.diagnosis.models import Diagnosis
-from dataservice.api.outcome.models import Outcome
-from dataservice.api.phenotype.models import Phenotype
-from dataservice.api.sample.models import Sample
-from dataservice.api.aliquot.models import Aliquot
-from dataservice.api.sequencing_experiment.models import SequencingExperiment
-from dataservice.api.genomic_file.models import GenomicFile
-from dataservice.api.workflow.models import (
-    Workflow,
-    WorkflowGenomicFile
-)
 
-ENTITY_TYPES = [
+DEFAULT_ENTITY_TYPES = [
     'study',
     'participant',
     'family_relationship',
@@ -61,7 +47,7 @@ class BaseLoader(object):
         db.drop_all()
         self.app_context.pop()
 
-    def run(self, entity_dict, entity_types=ENTITY_TYPES):
+    def run(self, entity_dict, entity_types=DEFAULT_ENTITY_TYPES):
         """
         Load all entities into db
         """
@@ -120,16 +106,36 @@ class BaseLoader(object):
             # Add to list
             entities.append(entity_model(**params))
 
-        # Add to session, save to database
+        # Save to db
         if entities:
-            print('Adding {}s to the session'.format(entity_type))
-            db.session.add_all(entities)
-            print('Begin commit of {} {}s to db'.format(len(entities),
-                                                        entity_type))
-            db.session.commit()
-
+            # Add to session and commit
+            self.load_all(entity_type, entities)
             # Save kids first ids
             self._save_kf_ids(_ids, entity_type, entities)
+
+    def load_entities(self, entity_type, entities):
+        chunk_size = 1000
+        if len(entities) > chunk_size:
+            self.batch_load(entity_type, entities, chunk_size)
+        else:
+            self.load_all(entity_type, entities)
+        # db.session.bulk_save_objects(entities, return_defaults=True)
+
+    def load_all(self, entity_type, entities):
+        print('Adding {} {}s to the session'.format(len(entities),
+                                                    entity_type))
+        db.session.add_all(entities)
+        print('Begin commit of {} {}s to db'.format(len(entities),
+                                                    entity_type))
+        db.session.commit()
+
+    def batch_load(self, entity_type, entities, chunk_size=1000):
+        for i, entity in enumerate(entities):
+            print('\tAdd {} {} to session'.format(entity_type, i))
+            db.session.add(entity)
+            if i % chunk_size == 0:
+                print('Committing {} entities'.format(chunk_size))
+                db.session.commit()
 
     def _create_family_relationships(self, entity_dict):
         """
