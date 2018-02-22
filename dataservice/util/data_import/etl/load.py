@@ -110,13 +110,15 @@ class BaseLoader(object):
         # Save to db
         if entities:
             # Add to session and commit
-            # self.batch_load(entity_type, entities)
-            # self.load_all(entity_type, entities)
-            self.load_entities(entity_type, entities)
+            # self.load_entities(entity_type, entities)
+            self.load_all(entity_type, entities)
             # Save kids first ids
             self._save_kf_ids(_ids, entity_type, entities)
 
     def load_entities(self, entity_type, entities):
+        """
+        Save entities to the database
+        """
         chunk_size = 1000
         if len(entities) > chunk_size:
             self.batch_load(entity_type, entities, chunk_size)
@@ -125,22 +127,26 @@ class BaseLoader(object):
         # db.session.bulk_save_objects(entities, return_defaults=True)
 
     def load_all(self, entity_type, entities):
+        """
+        Add all entities into single session, and commit in single transaction
+        """
         print('Adding {} {}s to the session'.format(len(entities),
                                                     entity_type))
         db.session.add_all(entities)
         print('Begin commit of {} {}s to db'.format(len(entities),
                                                     entity_type))
-        try:
-            db.session.commit()
-        except IntegrityError as e:
-            print('Failed loading of {}'.format(entity_type))
-            db.session.rollback()
+        # Save to db
+        self._db_commit(len(entities), entity_type)
 
     def batch_load(self, entity_type, entities, chunk_size=1000):
+        """
+        Add chunks of entities into a session, flush chunk, commit once
+        """
         n = len(entities)
         if chunk_size > n:
             chunk_size = max(n, chunk_size)
 
+        count = 0
         for i in range(0, n, chunk_size):
             chunk = entities[i - chunk_size:i]
             if chunk:
@@ -150,14 +156,19 @@ class BaseLoader(object):
                 db.session.add_all(entities[start:i])
                 print('Flushing {} {}s'.format(chunk_size, entity_type))
                 db.session.flush()
-        print('Flushing remaining {} {}s to session'.format(
-            len(entities[i:]) + 1,
-            entity_type))
+            count += chunk_size
+        # Save to db
+        self._db_commit(n, entity_type)
+
+        # Save remainder entities
         remaining = entities[0:1] + entities[i:]
+        print('Adding remaining {} {}s to session'.format(len(remaining),
+                                                          entity_type))
         db.session.add_all(remaining)
-        db.session.flush()
-        print('Committing all {} {}s'.format(n, entity_type))
-        db.session.commit()
+
+        # Save to db
+        self._db_commit(n, entity_type)
+        print("Count {}".format(count))
 
     def _create_family_relationships(self, entity_dict):
         """
@@ -210,3 +221,11 @@ class BaseLoader(object):
         keys = ['_unique_id_val', '_unique_id_col', '_links']
         for k in keys:
             params.pop(k, None)
+
+    def _db_commit(self, count, entity_type):
+        print('Committing all {} {}s'.format(count, entity_type))
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print('Failed loading of {}'.format(entity_type))
+            db.session.rollback()

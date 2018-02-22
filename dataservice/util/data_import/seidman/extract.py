@@ -79,10 +79,9 @@ class Extractor(object):
         """
         Read phenotype data
         """
-        if not filepath:
-            filepath = os.path.join(
-                DBGAP_DIR,
-                '3a_dbGaP_SubjectPhenotypes_ExtracardiacFindingsDS.txt')
+        filepath = os.path.join(
+            DBGAP_DIR,
+            '3a_dbGaP_SubjectPhenotypes_ExtracardiacFindingsDS.txt')
 
         # Read csv
         df = pd.read_csv(filepath,
@@ -90,31 +89,32 @@ class Extractor(object):
                          dtype={'SUBJID': str})
 
         # Convert age years to days
-        df["LATEST_EXAM_AGE"] = df["LATEST_EXAM_AGE"].apply(
+        age_at_event_days = df["LATEST_EXAM_AGE"].apply(
             lambda x: float(x) * 365)
 
-        # Delete extra column
-        del df['AGE_AT_FORM_COMPLETION']
+        # Select string based phenotypes
+        df = df.select_dtypes(include='object')
 
         # Make all values lower case
         for col in df.columns.tolist():
             df[col] = df[col].apply(lambda x: str(x).lower())
 
         # Reshape to build the phenotypes df
-        phenotype_cols = df.columns.tolist()[2:]
+        cols = df.columns.tolist()[2:]
+        phenotype_cols = [col for col in cols if not col.startswith('OTHER')]
         phenotype_df = pd.melt(df, id_vars='SUBJID', value_vars=phenotype_cols,
-                               var_name='phenotype', value_name='value')
-        # Create observed column
+                               var_name='phenotype', value_name='observed')
 
-        def func(row):
-            observed = 'positive'
-            negative_values = ['nan', 'none', 'not reported',
-                               'not applicable', 'unknown', 'no/not checked']
-            if row['value'] in negative_values:
-                observed = 'negative'
-            return observed
+        phenotype_df = pd.concat([age_at_event_days, phenotype_df], axis=1)
 
-        phenotype_df['observed'] = phenotype_df.apply(func, axis=1)
+        # Merge with HPO mapping
+        mapping_filepath = os.path.join(DATA_DIR, 'phenotype_hpo_mapping.txt')
+        if os.path.isfile(mapping_filepath):
+            hpo_df = pd.read_csv(mapping_filepath)
+            new_df = pd.merge(hpo_df, phenotype_df, on='phenotype')
+            new_df.rename(columns={"Yes": "hpo_id"}, inplace=True)
+            phenotype_df = new_df[['hpo_id', 'phenotype', 'observed',
+                                   'LATEST_EXAM_AGE', 'SUBJID']]
 
         def func(row): return "_".join(['phenotype', str(row.name)])
         phenotype_df['phenotype_id'] = phenotype_df.apply(func, axis=1)
