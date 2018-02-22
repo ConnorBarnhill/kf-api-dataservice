@@ -2,9 +2,10 @@ import os
 from importlib import import_module
 from pprint import pprint
 
+from sqlalchemy.exc import IntegrityError
+
 from dataservice.extensions import db
 from dataservice import create_app
-
 from dataservice.util.data_import.utils import to_camel_case
 from dataservice.api.family_relationship.models import FamilyRelationship
 
@@ -69,7 +70,7 @@ class BaseLoader(object):
             print('Completed loading {}'.format(entity_type))
 
         # Create family relationships
-        if 'family_relationship' not in skip_entities:
+        if 'family_relationship' in entity_types:
             self._create_family_relationships(entity_dict)
 
     def _create_entities(self, entity_model, entity_dict):
@@ -85,7 +86,7 @@ class BaseLoader(object):
         _ids = []
         entities = []
         for i, params in enumerate(entity_dict[entity_type]):
-            print('\tLoading {} # {}'.format(entity_type, i))
+            print('\tCreating {} # {}'.format(entity_type, i))
 
             # Save ids
             _ids.append(params['_unique_id_val'])
@@ -95,10 +96,10 @@ class BaseLoader(object):
             if '_links' in params:
                 linked_entities = params['_links']
                 for linked_entity, _params in linked_entities.items():
-                    link_key = _params['link_key']
-                    fk_col = _params['fk_col']
-                    fk_value = self.entity_id_map[linked_entity][link_key]
-                    params[fk_col] = fk_value
+                    source_fk_col = _params['source_fk_col']
+                    target_fk_col = _params['target_fk_col']
+                    fk_value = self.entity_id_map[linked_entity][source_fk_col]
+                    params[target_fk_col] = fk_value
                     del params['_links']
             # Remove the private keys which were only needed for linking
             self._remove_extra_keys(params)
@@ -109,7 +110,9 @@ class BaseLoader(object):
         # Save to db
         if entities:
             # Add to session and commit
-            self.load_all(entity_type, entities)
+            # self.batch_load(entity_type, entities)
+            # self.load_all(entity_type, entities)
+            self.load_entities(entity_type, entities)
             # Save kids first ids
             self._save_kf_ids(_ids, entity_type, entities)
 
@@ -127,15 +130,34 @@ class BaseLoader(object):
         db.session.add_all(entities)
         print('Begin commit of {} {}s to db'.format(len(entities),
                                                     entity_type))
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print('Failed loading of {}'.format(entity_type))
+            db.session.rollback()
 
     def batch_load(self, entity_type, entities, chunk_size=1000):
-        for i, entity in enumerate(entities):
-            print('\tAdd {} {} to session'.format(entity_type, i))
-            db.session.add(entity)
-            if i % chunk_size == 0:
-                print('Committing {} entities'.format(chunk_size))
-                db.session.commit()
+        n = len(entities)
+        if chunk_size > n:
+            chunk_size = max(n, chunk_size)
+
+        for i in range(0, n, chunk_size):
+            chunk = entities[i - chunk_size:i]
+            if chunk:
+                start = i - chunk_size + 1
+                print('Adding {}:{} {}s to session'.format(start, i,
+                                                           entity_type))
+                db.session.add_all(entities[start:i])
+                print('Flushing {} {}s'.format(chunk_size, entity_type))
+                db.session.flush()
+        print('Flushing remaining {} {}s to session'.format(
+            len(entities[i:]) + 1,
+            entity_type))
+        remaining = entities[0:1] + entities[i:]
+        db.session.add_all(remaining)
+        db.session.flush()
+        print('Committing all {} {}s'.format(n, entity_type))
+        db.session.commit()
 
     def _create_family_relationships(self, entity_dict):
         """
