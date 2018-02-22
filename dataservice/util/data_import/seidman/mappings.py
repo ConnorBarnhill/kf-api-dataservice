@@ -54,7 +54,7 @@ mappings_dict = {
     "phenotype": {
         "age_at_event_days": {COL_NAME: "age_at_event_days"},
         "phenotype": {COL_NAME: "phenotype"},
-        "hpo_id": None,
+        "hpo_id": {COL_NAME: "hpo_id"},
         "observed": {COL_NAME: "observed"},
         "_links": {
             'participant': {

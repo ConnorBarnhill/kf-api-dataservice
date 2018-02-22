@@ -8,14 +8,14 @@ ENTITY_TYPES = [
     'investigator',
     'study',
     'study_file',
-    'participant'
-    # 'phenotype'
-    # 'family_relationship',
-    # 'demographic',
-    # 'diagnosis',
-    # 'sample',
-    # 'aliquot',
-    # 'sequencing_experiment'
+    'participant',
+    'family_relationship',
+    'demographic',
+    'diagnosis',
+    'sample',
+    'aliquot',
+    'sequencing_experiment',
+    'phenotype'
 ]
 
 
