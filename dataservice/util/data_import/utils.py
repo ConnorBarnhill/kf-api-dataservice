@@ -1,3 +1,5 @@
+import time
+
 
 def dropna_rows_cols(df_func):
     """
@@ -56,3 +58,23 @@ def to_camel_case(snake_str):
     """
     words = snake_str.split('_')
     return ''.join([w.title() for w in words])
+
+
+def time_it(func):
+    """
+    Decorator to time the function
+    """
+
+    def wrapper(*args, **kwargs):
+        start = time.time()
+
+        r = func(*args, **kwargs)
+
+        end = time.time()
+
+        delta_sec = end - start
+        print("Time elapsed \nSec: {}\nMin: {}\nHours: {}".format(
+            delta_sec, delta_sec / 60, delta_sec / 60 / 60))
+        return r
+
+    return wrapper

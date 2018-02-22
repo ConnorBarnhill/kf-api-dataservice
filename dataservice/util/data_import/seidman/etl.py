@@ -5,9 +5,11 @@ from dataservice.util.data_import.seidman.transform import Transformer
 from dataservice.util.data_import.seidman.load import Loader
 
 ENTITY_TYPES = [
+    'investigator',
     'study',
-    'participant',
-    'phenotype'
+    'study_file',
+    'participant'
+    # 'phenotype'
     # 'family_relationship',
     # 'demographic',
     # 'diagnosis',

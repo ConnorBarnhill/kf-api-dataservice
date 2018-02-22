@@ -10,7 +10,28 @@ mappings_dict = {
         'version': {COL_NAME: 'study_version'},
         'name': {COL_NAME: 'study_name'},
         'attribution': {COL_NAME: 'attribution'},
-        "_unique_id_col": {COL_VALUE: "study_id"},
+        "_links": {
+            'investigator': {
+                'target_fk_col': {COL_VALUE: 'investigator_id'},
+                'source_fk_col': {COL_NAME: "investigator_name"}
+            }
+        },
+        "_unique_id_col": {COL_VALUE: "study_id"}
+    },
+    "investigator": {
+        'name': {COL_NAME: 'investigator_name'},
+        'institution': {COL_NAME: 'institution'},
+        "_unique_id_col": {COL_VALUE: "investigator_name"},
+    },
+    "study_file": {
+        "file_name": {COL_NAME: "study_file_name"},
+        "_unique_id_col": {COL_VALUE: "study_file_name"},
+        "_links": {
+            'study': {
+                'target_fk_col': {COL_VALUE: 'study_id'},
+                'source_fk_col': {COL_NAME: "study_id"}
+            }
+        }
     },
     "participant": {
         "external_id": {COL_NAME: "subjid"},
@@ -19,8 +40,8 @@ mappings_dict = {
         "_unique_id_col": {COL_VALUE: "subjid"},
         "_links": {
             'study': {
-                'fk_col': {COL_VALUE: 'study_id'},
-                'link_key': {COL_NAME: "study_id"}
+                'target_fk_col': {COL_VALUE: 'study_id'},
+                'source_fk_col': {COL_NAME: "study_id"}
             }
         }
     },
@@ -37,8 +58,8 @@ mappings_dict = {
         "observed": {COL_NAME: "observed"},
         "_links": {
             'participant': {
-                'fk_col': {COL_VALUE: 'participant_id'},
-                'link_key': {COL_NAME: "subjid"}
+                'target_fk_col': {COL_VALUE: 'participant_id'},
+                'source_fk_col': {COL_NAME: "subjid"}
             }
         },
         "_unique_id_col": {COL_VALUE: "phenotype_id"}
@@ -56,8 +77,8 @@ mappings_dict = {
                  COL_VALUE: {"More than one race": "other"}},
         "_links": {
             'participant': {
-                'fk_col': {COL_VALUE: 'participant_id'},
-                'link_key': {COL_NAME: "subjid"}
+                'target_fk_col': {COL_VALUE: 'participant_id'},
+                'source_fk_col': {COL_NAME: "subjid"}
             }
         },
         "_unique_id_col": {COL_VALUE: "demographic_id"}
@@ -69,8 +90,8 @@ mappings_dict = {
         "diagnosis_category": None,
         "_links": {
             'participant': {
-                'fk_col': {COL_VALUE: 'participant_id'},
-                'link_key': {COL_NAME: "subjid"}
+                'target_fk_col': {COL_VALUE: 'participant_id'},
+                'source_fk_col': {COL_NAME: "subjid"}
             }
         },
         "_unique_id_col": {COL_VALUE: "diagnosis_id"}
@@ -84,8 +105,8 @@ mappings_dict = {
         "tissue_type": {COL_VALUE: "Normal"},
         "_links": {
             'participant': {
-                'fk_col': {COL_VALUE: 'participant_id'},
-                'link_key': {COL_NAME: "subjid"}
+                'target_fk_col': {COL_VALUE: 'participant_id'},
+                'source_fk_col': {COL_NAME: "subjid"}
             }
         },
         "_unique_id_col": {COL_VALUE: "sample_name"}
@@ -100,8 +121,8 @@ mappings_dict = {
         "shipment_date": None,
         "_links": {
             'sample': {
-                'fk_col': {COL_VALUE: 'sample_id'},
-                'link_key': {COL_NAME: "sample_name"}
+                'target_fk_col': {COL_VALUE: 'sample_id'},
+                'source_fk_col': {COL_NAME: "sample_name"}
             }
         },
         "_unique_id_col": {COL_VALUE: "barcode"}
@@ -115,7 +136,7 @@ mappings_dict = {
         "library_strand": None,
         "is_paired_end": {COL_VALUE: "True", COL_TYPE: "boolean"},
         "platform": {COL_VALUE: "Illumina"},
-        "instrument_model": {COL_VALUE: "instrument"},
+        "instrument_model": {COL_NAME: "instrument"},
         "max_insert_size": {COL_NAME: "max_insert_size"},
         "mean_insert_size": {COL_NAME: "mean_insert_size"},
         "mean_depth": None,
@@ -123,8 +144,8 @@ mappings_dict = {
         "mean_read_length": {COL_NAME: "mean_read_length"},
         "_links": {
             'aliquot': {
-                'fk_col': {COL_VALUE: 'aliquot_id'},
-                'link_key': {COL_NAME: "barcode"}
+                'target_fk_col': {COL_VALUE: 'aliquot_id'},
+                'source_fk_col': {COL_NAME: "barcode"}
             }
         },
         "_unique_id_col": {COL_VALUE: "rg_barcode"}
