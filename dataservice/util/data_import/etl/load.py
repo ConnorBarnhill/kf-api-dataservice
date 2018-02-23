@@ -112,8 +112,8 @@ class BaseLoader(object):
         # Save to db
         if entities:
             # Add to session and commit
-            # self.load_entities(entity_type, entities)
-            self.load_all(entity_type, entities)
+            self.load_entities(entity_type, entities)
+            # self.load_all(entity_type, entities)
             # Save kids first ids
             self._save_kf_ids(_ids, entity_type, entities)
 
@@ -156,44 +156,15 @@ class BaseLoader(object):
                                                            entity_type))
                 db.session.add_all(entities[start:i])
                 print('Flushing {} {}s'.format(chunk_size, entity_type))
-                db.session.flush()
-        # Save to db
-        self._db_commit(n, entity_type)
+                self._db_commit(chunk_size, entity_type)
 
         # Save remainder entities
         remaining = entities[0:1] + entities[i:]
         print('Adding remaining {} {}s to session'.format(len(remaining),
                                                           entity_type))
         db.session.add_all(remaining)
-
         # Save to db
-        self._db_commit(n, entity_type)
-
-    # def _create_family_relationships(self, entity_dict):
-    #     """
-    #     Create and save family relationships for a proband
-    #     Relationships are: mother - proband and father - proband
-    #     """
-    #     print('Loading {}s ...'.format('family_relationship'))
-    #
-    #     families = entity_dict['family_relationship']
-    #     for family in families:
-    #         # Mother
-    #         mother_id = self._get_kf_id('participant', family['mother'])
-    #         # Father
-    #         father_id = self._get_kf_id('participant', family['father'])
-    #         # Proband
-    #         proband_id = self._get_kf_id('participant', family['proband'])
-    #
-    #         r1 = FamilyRelationship(participant_id=mother_id,
-    #                                 relative_id=proband_id,
-    #                                 participant_to_relative_relation='mother')
-    #
-    #         r2 = FamilyRelationship(participant_id=father_id,
-    #                                 relative_id=proband_id,
-    #                                 participant_to_relative_relation='father')
-    #         db.session.add_all([r1, r2])
-    #     db.session.commit()
+        self._db_commit(len(remaining), entity_type)
 
     def _create_family_relationships(self, entity_dict, relation_keys=None):
         """
@@ -257,7 +228,7 @@ class BaseLoader(object):
             params.pop(k, None)
 
     def _db_commit(self, count, entity_type):
-        print('Committing all {} {}s'.format(count, entity_type))
+        print('Committing {} {}s'.format(count, entity_type))
         try:
             db.session.commit()
         except IntegrityError as e:
