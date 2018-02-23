@@ -112,8 +112,8 @@ class BaseLoader(object):
         # Save to db
         if entities:
             # Add to session and commit
-            self.load_entities(entity_type, entities)
-            # self.load_all(entity_type, entities)
+            # self.load_entities(entity_type, entities)
+            self.load_all(entity_type, entities)
             # Save kids first ids
             self._save_kf_ids(_ids, entity_type, entities)
 

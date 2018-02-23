@@ -15,6 +15,7 @@ ENTITY_TYPES = [
     'sample',
     'aliquot',
     'sequencing_experiment',
+    'genomic_file',
     'phenotype'
 ]
 
