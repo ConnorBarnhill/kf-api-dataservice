@@ -9,8 +9,6 @@ from dataservice.util.data_import.utils import (
 )
 
 DATA_DIR = '/Users/singhn4/Projects/kids_first/data/Schiffman'
-DBGAP_DIR = os.path.join(DATA_DIR, 'dbgap')
-ALIQUOT_SHIP_DIR = os.path.join(DATA_DIR, 'manifests', 'shipping')
 
 
 class Extractor(object):
@@ -86,6 +84,26 @@ class Extractor(object):
 
         return participant_df
 
+    def create_family_relationship_df(self, df):
+        """
+        Create family relationship df from all_data_df
+        """
+        df = df[['individual_name', 'relationship_to_proband',
+                 'ewing_trio_number']]
+        family_dict = {}
+        for idx, row in df.iterrows():
+            fam_id = row['ewing_trio_number']
+            if fam_id not in family_dict:
+                family_dict[fam_id] = {}
+            family_dict[fam_id][
+                row['relationship_to_proband']] = row['individual_name']
+        df = pd.DataFrame(list(family_dict.values()))
+
+        def func(row): return "_".join(['rel', str(row.name)])
+        df['rel_id'] = df.apply(func, axis=1)
+
+        return df
+
     def create_diagnosis_df(self, df):
         """
         Extract diagnosis df from all data df
@@ -101,6 +119,16 @@ class Extractor(object):
         df = df.where((pd.notnull(df)), None)
 
         return df
+
+    def create_phenotype_df(self, diagnosis_df):
+        """
+        Create phenotype dataframe using diagnosis_df
+        """
+        diagnosis_df['phenotype'] = "Ewing's Sarcoma"
+        diagnosis_df['hpo_id'] = "HP:0012254"
+        diagnosis_df['observed'] = "yes"
+
+        return diagnosis_df
 
     @reformat_column_names
     @dropna_rows_cols
@@ -173,11 +201,17 @@ class Extractor(object):
         # All participant data
         all_data_df = self.read_data()
 
-        # Cleaned up participant only df
+        # Family relationships
+        family_df = self.create_family_relationship_df(all_data_df)
+
+        # Participant df
         participant_df = self.create_participant_df(all_data_df)
 
         # Diagnosis df
         diagnosis_df = self.create_diagnosis_df(all_data_df)
+
+        # Phenotype df
+        phenotype_df = self.create_phenotype_df(diagnosis_df)
 
         # Sequencing Experiment
         genomic_df = self.read_genomic_data()
@@ -201,8 +235,9 @@ class Extractor(object):
             'study_file': study_study_files_df,
             'investigator': investigator_df,
             'participant': study_participant_df,
-            'demographic': all_data_df,
+            'family_relationship': family_df,
             'diagnosis': diagnosis_df,
+            'phenotype': phenotype_df,
             'sequencing_experiment': seq_exp_df,
             'genomic_file': genomic_file_df,
             'default': all_data_df
