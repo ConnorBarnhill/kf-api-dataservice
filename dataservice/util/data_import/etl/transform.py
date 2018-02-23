@@ -62,7 +62,6 @@ class BaseTransformer(object):
         """
         # Get original entity dataframe
         data_df = entity_dfs.get(entity_type, entity_dfs['default'])
-
         # Get the unique id column for this dataframe
         _id = self.mapper.get_id_col(entity_type)
 
