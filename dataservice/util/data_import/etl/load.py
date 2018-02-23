@@ -9,7 +9,7 @@ from dataservice import create_app
 from dataservice.util.data_import.utils import to_camel_case
 from dataservice.api.family_relationship.models import FamilyRelationship
 
-ENTITY_TYPES = [
+DEFAULT_ENTITY_TYPES = [
     'investigator',
     'study',
     'study_file',
@@ -40,8 +40,6 @@ class BaseLoader(object):
         self.app = create_app(config_name)
         self.app_context = self.app.app_context()
         self.app_context.push()
-        # TODO - remove this later
-        db.drop_all()
         db.create_all()
 
     def drop_all(self):
@@ -171,31 +169,66 @@ class BaseLoader(object):
         # Save to db
         self._db_commit(n, entity_type)
 
-    def _create_family_relationships(self, entity_dict):
+    # def _create_family_relationships(self, entity_dict):
+    #     """
+    #     Create and save family relationships for a proband
+    #     Relationships are: mother - proband and father - proband
+    #     """
+    #     print('Loading {}s ...'.format('family_relationship'))
+    #
+    #     families = entity_dict['family_relationship']
+    #     for family in families:
+    #         # Mother
+    #         mother_id = self._get_kf_id('participant', family['mother'])
+    #         # Father
+    #         father_id = self._get_kf_id('participant', family['father'])
+    #         # Proband
+    #         proband_id = self._get_kf_id('participant', family['proband'])
+    #
+    #         r1 = FamilyRelationship(participant_id=mother_id,
+    #                                 relative_id=proband_id,
+    #                                 participant_to_relative_relation='mother')
+    #
+    #         r2 = FamilyRelationship(participant_id=father_id,
+    #                                 relative_id=proband_id,
+    #                                 participant_to_relative_relation='father')
+    #         db.session.add_all([r1, r2])
+    #     db.session.commit()
+
+    def _create_family_relationships(self, entity_dict, relation_keys=None):
         """
         Create and save family relationships for a proband
         Relationships are: mother - proband and father - proband
         """
         print('Loading {}s ...'.format('family_relationship'))
 
+        if not relation_keys:
+            relation_keys = ['mother', 'father']
+
         families = entity_dict['family_relationship']
+        entities = []
         for family in families:
-            # Mother
-            mother_id = self._get_kf_id('participant', family['mother'])
-            # Father
-            father_id = self._get_kf_id('participant', family['father'])
-            # Proband
-            proband_id = self._get_kf_id('participant', family['proband'])
+            for r in relation_keys:
+                rel = self._create_family_relationship(r, family)
+                if rel:
+                    entities.append(rel)
 
-            r1 = FamilyRelationship(participant_id=mother_id,
-                                    relative_id=proband_id,
-                                    participant_to_relative_relation='mother')
+        self.load_all('family_relationship', entities)
 
-            r2 = FamilyRelationship(participant_id=father_id,
-                                    relative_id=proband_id,
-                                    participant_to_relative_relation='father')
-            db.session.add_all([r1, r2])
-        db.session.commit()
+    def _create_family_relationship(self, relation_key, family):
+        """
+        Create a family relationship
+        """
+        if family.get(relation_key) and family.get('proband'):
+            p_id = self._get_kf_id(
+                'participant', family[relation_key])
+            r_id = self._get_kf_id(
+                'participant', family['proband'])
+            if p_id and r_id:
+                return FamilyRelationship(
+                    participant_id=p_id,
+                    relative_id=r_id,
+                    participant_to_relative_relation=relation_key)
 
     def _get_kf_id(self, entity_type, key):
         return self.entity_id_map[entity_type].get(str(key))

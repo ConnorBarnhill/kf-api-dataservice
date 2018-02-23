@@ -9,14 +9,14 @@ ENTITY_TYPES = [
     'study',
     'study_file',
     'participant',
+    'family_relationship',
     'demographic',
     'diagnosis',
     'sample',
     'aliquot',
     'sequencing_experiment',
-    'genomic_file'
-    # 'family_relationship',
-    # 'phenotype'
+    'genomic_file',
+    'phenotype'
 ]
 
 
@@ -35,6 +35,7 @@ def run():
 
     # Load into db via sqlalchemy
     print('Begin loading ...')
+
     l = Loader()
     l.run(content, entity_types=ENTITY_TYPES)
     print('Completed loading\n')
