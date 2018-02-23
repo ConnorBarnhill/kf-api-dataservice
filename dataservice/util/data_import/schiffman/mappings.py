@@ -18,6 +18,13 @@ The values of these keys can be set to the following:
         Use {COL_NAME: <name of col in input csv>,
             COL_VALUE: {<a potential value in the input csv>: <mapped value>,
                         <a potential value in the input csv>: <mapped value>}}
+
+Every entity in mappings_dict must specify which column should be used to
+uniquely identify the records in the table. Specify the unique columns like
+this:
+    "_unique_id_col": {COL_VALUE: <name of column in original table>}
+
+Links - TODO
 """
 
 COL_NAME = "$col_name"
@@ -66,25 +73,25 @@ mappings_dict = {
             }
         }
     },
-    # "family_relationship": {
-    #     "proband": {COL_NAME: "subjid"},
-    #     "mother": {COL_NAME: "mother"},
-    #     "father": {COL_NAME: "father"},
-    #     "_unique_id_col": {COL_VALUE: "famid"}
-    # },
-    # "phenotype": {
-    #     "age_at_event_days": {COL_NAME: "age_at_event_days"},
-    #     "phenotype": {COL_NAME: "phenotype"},
-    #     "hpo_id": {COL_NAME: "hpo_id"},
-    #     "observed": {COL_NAME: "observed"},
-    #     "_links": {
-    #         'participant': {
-    #             'target_fk_col': {COL_VALUE: 'participant_id'},
-    #             'source_fk_col': {COL_NAME: "subjid"}
-    #         }
-    #     },
-    #     "_unique_id_col": {COL_VALUE: "phenotype_id"}
-    # },
+    "family_relationship": {
+        "mother": {COL_NAME: "Mother"},
+        "father": {COL_NAME: "Father"},
+        "proband": {COL_NAME: "Self/Case"},
+        "_unique_id_col": {COL_VALUE: "rel_id"}
+    },
+    "phenotype": {
+        "age_at_event_days": {COL_NAME: "age_at_diagnosis_(days)"},
+        "phenotype": {COL_NAME: "phenotype"},
+        "hpo_id": {COL_NAME: "hpo_id"},
+        "observed": {COL_NAME: "observed"},
+        "_links": {
+            'participant': {
+                'target_fk_col': {COL_VALUE: 'participant_id'},
+                'source_fk_col': {COL_NAME: "individual_name"}
+            }
+        },
+        "_unique_id_col": {COL_VALUE: "individual_name"}
+    },
     "demographic": {
         "ethnicity": "unknown",
         "gender": {COL_NAME: "gender",
