@@ -149,5 +149,21 @@ mappings_dict = {
             }
         },
         "_unique_id_col": {COL_VALUE: "rg_barcode"}
+    },
+    "genomic_file": {
+        "uuid": {COL_NAME: "uuid"},
+        "file_name": {COL_NAME: "file_name"},
+        "file_format": {COL_NAME: "file_format"},
+        "file_url": {COL_NAME: "file_url"},
+        "data_type": {COL_NAME: "data_type"},
+        "md5sum": {COL_NAME: "md5sum"},
+        "controlled_access": None,
+        "_links": {
+            'sequencing_experiment': {
+                'target_fk_col': {COL_VALUE: 'sequencing_experiment_id'},
+                'source_fk_col': {COL_NAME: "rg_barcode"}
+            }
+        },
+        "_unique_id_col": {COL_VALUE: "file_name"}
     }
 }
