@@ -9,15 +9,19 @@ from dataservice import create_app
 from dataservice.util.data_import.utils import to_camel_case
 from dataservice.api.family_relationship.models import FamilyRelationship
 
-DEFAULT_ENTITY_TYPES = [
+ENTITY_TYPES = [
+    'investigator',
     'study',
+    'study_file',
     'participant',
-    'family_relationship',
     'demographic',
     'diagnosis',
     'sample',
     'aliquot',
-    'sequencing_experiment'
+    'sequencing_experiment',
+    'genomic_file'
+    'family_relationship',
+    'phenotype'
 ]
 
 
@@ -36,7 +40,8 @@ class BaseLoader(object):
         self.app = create_app(config_name)
         self.app_context = self.app.app_context()
         self.app_context.push()
-        # db.drop_all()
+        # TODO - remove this later
+        db.drop_all()
         db.create_all()
 
     def drop_all(self):
@@ -145,7 +150,6 @@ class BaseLoader(object):
         if chunk_size > n:
             chunk_size = max(n, chunk_size)
 
-        count = 0
         for i in range(0, n, chunk_size):
             chunk = entities[i - chunk_size:i]
             if chunk:
@@ -155,7 +159,6 @@ class BaseLoader(object):
                 db.session.add_all(entities[start:i])
                 print('Flushing {} {}s'.format(chunk_size, entity_type))
                 db.session.flush()
-            count += chunk_size
         # Save to db
         self._db_commit(n, entity_type)
 
@@ -167,7 +170,6 @@ class BaseLoader(object):
 
         # Save to db
         self._db_commit(n, entity_type)
-        print("Count {}".format(count))
 
     def _create_family_relationships(self, entity_dict):
         """
@@ -227,4 +229,5 @@ class BaseLoader(object):
             db.session.commit()
         except IntegrityError as e:
             print('Failed loading of {}'.format(entity_type))
+            print(e)
             db.session.rollback()

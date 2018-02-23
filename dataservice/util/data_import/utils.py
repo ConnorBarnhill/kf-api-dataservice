@@ -45,11 +45,16 @@ def reformat_column_names(df_func):
         except AttributeError:
             print('Cannot perform reformat_column_names since df is None')
             return df
-        df.columns = map((lambda x: x.replace(" ", "_").lower()),
-                         df.columns)
+
+        cols_to_lower(df)
+
         return df
 
     return wrapper
+
+
+def cols_to_lower(df):
+    df.columns = map((lambda x: x.replace(" ", "_").lower()), df.columns)
 
 
 def to_camel_case(snake_str):
