@@ -1,4 +1,5 @@
 import os
+import json
 import pandas as pd
 
 from dataservice.util.data_import.utils import (
@@ -316,6 +317,50 @@ class Extractor(object):
 
         return df
 
+    def read_genomic_file_info(self, filepath=None):
+        """
+        Read genomic file info
+        """
+        if not filepath:
+            filepath = os.path.join(DATA_DIR, 'genomic_file_uuid.json')
+
+        def get_ext(fp):
+            filename = os.path.basename(fp)
+            parts = filename.split('.')
+            if len(parts) > 2:
+                ext = '.'.join(parts[1:])
+            else:
+                ext = parts[-1]
+            return ext
+
+        with open(filepath, 'r') as json_file:
+            uuid_dict = json.load(json_file)
+
+        gf_dicts = []
+        for k, v in uuid_dict.items():
+            file_info = {
+                'uuid': v['did'],
+                'md5sum': v['hashes']['md5'],
+                'file_url': v['urls'][0],
+                'data_type': 'submitted aligned reads',
+                'file_format': get_ext(v['urls'][0]),
+                'file_name': os.path.basename(v['urls'][0])
+            }
+            gf_dicts.append(file_info)
+
+        return pd.DataFrame(gf_dicts)
+
+    def read_sample_gf_data(self, filepath=None):
+        """
+        Read sample to genomic file mapping
+        """
+        if not filepath:
+            filepath = os.path.join(DATA_DIR, 'manifests',
+                                    'GMKF_BAMsampleIDs.xlsx')
+        df = pd.read_excel(filepath)
+        df = df.loc[df['Cohort'] == 'GMKF-Seidman']
+        return df
+
     def build_dfs(self):
         """
         Read in all entities and join into a single table
@@ -354,18 +399,24 @@ class Extractor(object):
         # Sequencing experiments
         seq_exp_df = self.read_seq_experiment_data()
 
+        # Genomic files
+        # Read genomic file info
+        gf_file_info_df = self.read_genomic_file_info()
+        # Sample and BAM File df
+        sample_gf_df = self.read_sample_gf_data()
+
         # Create full participant df
         # Merge Gender + Demographics
         gender_demo_df = pd.merge(gender_df, demographic_df, on='subjid')
 
         # Merge Family
-        df1 = pd.merge(gender_demo_df, family_df, on='subjid')
+        demographic_df = pd.merge(gender_demo_df, family_df, on='subjid')
 
         # Merge Diagnosis
-        df2 = pd.merge(df1, diagnosis_df, on='subjid')
+        diagnosis_df = pd.merge(family_df, diagnosis_df, on='subjid')
 
         # Merge Sample
-        df3 = pd.merge(df2, participant_sample_df, on='subjid')
+        df3 = pd.merge(family_df, participant_sample_df, on='subjid')
 
         # Merge Aliquot
         df4 = pd.merge(df3, aliquot_df,
@@ -393,13 +444,26 @@ class Extractor(object):
         phenotype_participant_df = pd.merge(phenotype_df, participant_df,
                                             on='subjid')
 
+        # Merge with sequencing experiment df
+        df = pd.merge(sample_gf_df, full_participant_df,
+                      left_on='dbgap_subject_id',
+                      right_on='sample_name')
+        # Merge with genomic file info df
+        genomic_file_df = pd.merge(df, gf_file_info_df,
+                                   left_on='BAM sample ID',
+                                   right_on='file_name')
+
         # Dict to store dfs for each entity
         entity_dfs = {
             'study': study_investigator_df,
             'study_file': study_study_files_df,
             'investigator': investigator_df,
             'participant': participant_df,
+            'family_relationship': family_df,
+            'demographic': demographic_df,
+            'diagnosis': diagnosis_df,
             'phenotype': phenotype_participant_df,
+            'genomic_file': genomic_file_df,
             'default': full_participant_df
         }
 
