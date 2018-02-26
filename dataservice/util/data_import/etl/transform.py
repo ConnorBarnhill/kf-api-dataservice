@@ -1,3 +1,4 @@
+from dataservice.util.data_import.etl.defaults import DEFAULT_ENTITY_TYPES
 from pprint import pprint
 
 
@@ -9,7 +10,7 @@ class BaseTransformer(object):
             mapper = Mapper(mappings_dict)
         self.mapper = mapper
 
-    def run(self, entity_dfs, entity_type_list, nrows=None):
+    def run(self, entity_dfs, **kwargs):
         """
         For each entity_type:
         Transform the entity dataframe into a collection of dicts
@@ -18,6 +19,8 @@ class BaseTransformer(object):
         Column names are mapped to dict keys
         Column values are filled in to dict values
         """
+        nrows = kwargs.get('nrows')
+        entity_type_list = kwargs.get('entity_types', DEFAULT_ENTITY_TYPES)
         entity_dict = {}
 
         # For each entity type

@@ -7,22 +7,8 @@ from sqlalchemy.exc import IntegrityError
 from dataservice.extensions import db
 from dataservice import create_app
 from dataservice.util.data_import.utils import to_camel_case
+from dataservice.util.data_import.etl.defaults import DEFAULT_ENTITY_TYPES
 from dataservice.api.family_relationship.models import FamilyRelationship
-
-DEFAULT_ENTITY_TYPES = [
-    'investigator',
-    'study',
-    'study_file',
-    'participant',
-    'demographic',
-    'diagnosis',
-    'sample',
-    'aliquot',
-    'sequencing_experiment',
-    'genomic_file'
-    'family_relationship',
-    'phenotype'
-]
 
 
 class BaseLoader(object):
@@ -50,11 +36,13 @@ class BaseLoader(object):
         db.drop_all()
         self.app_context.pop()
 
-    def run(self, entity_dict, entity_types=DEFAULT_ENTITY_TYPES):
+    def run(self, entity_dict, **kwargs):
         """
         Load all entities into db
         """
+        entity_types = kwargs.get('entity_types', DEFAULT_ENTITY_TYPES)
         skip_entities = ['family_relationship']
+
         # For each entity type
         for entity_type in entity_types:
             # Skip some entities
