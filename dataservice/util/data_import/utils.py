@@ -1,4 +1,5 @@
 import time
+import yaml
 
 
 def dropna_rows_cols(df_func):
@@ -83,3 +84,8 @@ def time_it(func):
         return r
 
     return wrapper
+
+
+def read_yaml(filepath):
+    with open(filepath, 'r') as yaml_file:
+        return yaml.load(yaml_file)

@@ -109,7 +109,8 @@ class Extractor(object):
         Extract diagnosis df from all data df
         """
         # Create diagnosis df
-        df.loc[(df['morphology'] == "9260/3: Ewing's sarcoma\r\nEwing's tumor"),
+        df.loc[(df['morphology'] == "9260/3: Ewing's"
+                "sarcoma\r\nEwing's tumor"),
                'morphology'] = 'Ewing Sarcoma'
 
         # Extract columns needed
