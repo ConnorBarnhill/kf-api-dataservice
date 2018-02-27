@@ -127,7 +127,7 @@ class Extractor(object):
         """
         diagnosis_df['phenotype'] = "Ewing's Sarcoma"
         diagnosis_df['hpo_id'] = "HP:0012254"
-        diagnosis_df['observed'] = "yes"
+        diagnosis_df['observed'] = "positive"
 
         return diagnosis_df
 
