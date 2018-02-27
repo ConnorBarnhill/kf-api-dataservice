@@ -110,12 +110,29 @@ class Extractor(object):
 
         # Merge with HPO mapping
         mapping_filepath = os.path.join(DATA_DIR, 'phenotype_hpo_mapping.txt')
-        if os.path.isfile(mapping_filepath):
-            hpo_df = pd.read_csv(mapping_filepath)
-            new_df = pd.merge(hpo_df, phenotype_df, on='phenotype')
-            new_df.rename(columns={"Yes": "hpo_id"}, inplace=True)
-            phenotype_df = new_df[['hpo_id', 'phenotype', 'observed',
-                                   'LATEST_EXAM_AGE', 'SUBJID']]
+        hpo_df = pd.read_csv(mapping_filepath)
+        new_df = pd.merge(hpo_df, phenotype_df, on='phenotype')
+        new_df.rename(columns={"Yes": "hpo_id"}, inplace=True)
+        phenotype_df = new_df[['hpo_id', 'phenotype', 'observed',
+                               'LATEST_EXAM_AGE', 'SUBJID']]
+
+        # Set observed
+        unknown_values = ['none', 'no/not checked', 'unknown',
+                          'not applicable', 'absent']
+        phenotype_df = phenotype_df[phenotype_df['observed'].apply(
+            lambda x: x not in unknown_values)]
+
+        def func(row):
+            return 'negative' if row['observed'] == 'no' else 'positive'
+        phenotype_df['observed'] = phenotype_df.apply(func, axis=1)
+
+        # Clean up hpo_id
+        def func(row):
+            if (row['hpo_id'] == '--') or (row['hpo_id'] == 'None'):
+                return None
+            else:
+                return row['hpo_id']
+        phenotype_df['hpo_id'] = phenotype_df.apply(func, axis=1)
 
         def func(row): return "_".join(['phenotype', str(row.name)])
         phenotype_df['phenotype_id'] = phenotype_df.apply(func, axis=1)
@@ -340,6 +357,7 @@ class Extractor(object):
         for k, v in uuid_dict.items():
             file_info = {
                 'uuid': v['did'],
+                'file_size': v['size'],
                 'md5sum': v['hashes']['md5'],
                 'file_url': v['urls'][0],
                 'data_type': 'submitted aligned reads',
