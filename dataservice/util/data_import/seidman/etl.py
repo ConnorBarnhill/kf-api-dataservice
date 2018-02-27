@@ -21,7 +21,6 @@ def run():
 
     # Load into db via sqlalchemy
     print('Begin loading ...')
-
     l = Loader()
     l.run(content)
     print('Completed loading\n')
