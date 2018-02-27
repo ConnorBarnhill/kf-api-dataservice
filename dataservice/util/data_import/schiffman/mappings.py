@@ -177,6 +177,7 @@ mappings_dict = {
         "uuid": {COL_NAME: "uuid"},
         "file_name": {COL_NAME: "file_name"},
         "file_format": {COL_NAME: "file_format"},
+        "file_size": {COL_NAME: "file_size"},
         "file_url": {COL_NAME: "file_url"},
         "data_type": {COL_NAME: "data_type"},
         "md5sum": {COL_NAME: "md5sum"},
