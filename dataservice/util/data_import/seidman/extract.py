@@ -142,17 +142,17 @@ class Extractor(object):
         return phenotype_df
 
     def read_phenotype_data(self, filepath=None):
-        if not filepath:
-            filepath = os.path.join(DATA_DIR, 'phenotypes.txt')
+        # if not filepath:
+        #     filepath = os.path.join(DATA_DIR, 'phenotypes.txt')
+        #
+        # if not os.path.isfile(filepath):
+        #     df = self.create_phenotype_data()
+        #     # Write to file
+        #     df.to_csv(filepath)
+        # else:
+        #     df = pd.read_csv(filepath, dtype={'subjid': str})
 
-        if not os.path.isfile(filepath):
-            df = self.create_phenotype_data()
-            # Write to file
-            df.to_csv(filepath)
-        else:
-            df = pd.read_csv(filepath, dtype={'subjid': str})
-
-        return df
+        return self.create_phenotype_data()
 
     @reformat_column_names
     @dropna_rows_cols
