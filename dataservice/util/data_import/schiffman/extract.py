@@ -172,6 +172,7 @@ class Extractor(object):
         for k, v in uuid_dict.items():
             file_info = {
                 'uuid': v['did'],
+                'file_size': v['size'],
                 'md5sum': v['hashes']['md5'],
                 'file_url': v['urls'][0],
                 'data_type': 'submitted aligned reads',
