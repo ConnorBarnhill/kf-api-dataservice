@@ -1,10 +1,12 @@
 import time
 import yaml
+from pandas import notnull
 
 
 def dropna_rows_cols(df_func):
     """
-    Decorator to drop rows and cols w all nan values
+    Decorator to drop rows and cols w all nan values and replace
+    any NaN values with None
     """
 
     def wrapper(*args, **kwargs):
@@ -23,6 +25,9 @@ def dropna_rows_cols(df_func):
         df.dropna(how="all", inplace=True)
         # Cols
         df.dropna(how="all", axis=1, inplace=True)
+        # Replace NaN values with None
+        df = df.where((notnull(df)), None)
+
         return df
 
     return wrapper
