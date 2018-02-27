@@ -4,7 +4,8 @@ import pandas as pd
 
 from dataservice.util.data_import.utils import (
     reformat_column_names,
-    dropna_rows_cols
+    dropna_rows_cols,
+    cols_to_lower
 )
 
 DATA_DIR = '/Users/singhn4/Projects/kids_first/data/Seidman_2015'
@@ -90,8 +91,9 @@ class Extractor(object):
                          dtype={'SUBJID': str})
 
         # Convert age years to days
-        age_at_event_days = df["LATEST_EXAM_AGE"].apply(
-            lambda x: float(x) * 365)
+        df['LATEST_EXAM_AGE'] = df["LATEST_EXAM_AGE"].apply(
+            lambda x: int(x) * 365)
+        age_at_event_days = df[['LATEST_EXAM_AGE', 'SUBJID']]
 
         # Select string based phenotypes
         df = df.select_dtypes(include='object')
@@ -106,34 +108,34 @@ class Extractor(object):
         phenotype_df = pd.melt(df, id_vars='SUBJID', value_vars=phenotype_cols,
                                var_name='phenotype', value_name='observed')
 
-        phenotype_df = pd.concat([age_at_event_days, phenotype_df], axis=1)
-
         # Merge with HPO mapping
         mapping_filepath = os.path.join(DATA_DIR, 'phenotype_hpo_mapping.txt')
-        hpo_df = pd.read_csv(mapping_filepath)
-        new_df = pd.merge(hpo_df, phenotype_df, on='phenotype')
-        new_df.rename(columns={"Yes": "hpo_id"}, inplace=True)
-        phenotype_df = new_df[['hpo_id', 'phenotype', 'observed',
-                               'LATEST_EXAM_AGE', 'SUBJID']]
+        if os.path.isfile(mapping_filepath):
+            hpo_df = pd.read_csv(mapping_filepath)
+            new_df = pd.merge(hpo_df, phenotype_df, on='phenotype')
+            new_df.rename(columns={"Yes": "hpo_id"}, inplace=True)
+            phenotype_df = new_df[['hpo_id', 'phenotype', 'observed',
+                                   'SUBJID']]
 
-        # Set observed
-        unknown_values = ['none', 'no/not checked', 'unknown',
-                          'not applicable', 'absent']
+        # Remove unkonwns
+        unknown_values = ['none', 'unknown', 'no/not checked' 'not applicable',
+                          'absent']
         phenotype_df = phenotype_df[phenotype_df['observed'].apply(
             lambda x: x not in unknown_values)]
 
+        # Map to positive/negative
         def func(row):
             return 'negative' if row['observed'] == 'no' else 'positive'
         phenotype_df['observed'] = phenotype_df.apply(func, axis=1)
 
         # Clean up hpo_id
-        def func(row):
-            if (row['hpo_id'] == '--') or (row['hpo_id'] == 'None'):
-                return None
-            else:
-                return row['hpo_id']
-        phenotype_df['hpo_id'] = phenotype_df.apply(func, axis=1)
+        phenotype_df.loc[(phenotype_df.hpo_id == 'None') | (
+            phenotype_df.hpo_id == '--'), 'hpo_id'] = None
 
+        # Merge back in age at event in days
+        phenotype_df = pd.merge(phenotype_df, age_at_event_days, on='SUBJID')
+
+        # Add unique col
         def func(row): return "_".join(['phenotype', str(row.name)])
         phenotype_df['phenotype_id'] = phenotype_df.apply(func, axis=1)
 
@@ -484,7 +486,6 @@ class Extractor(object):
             'genomic_file': genomic_file_df,
             'default': full_participant_df
         }
-
         return entity_dfs
 
     def _add_study_cols(self, study_df, df):
