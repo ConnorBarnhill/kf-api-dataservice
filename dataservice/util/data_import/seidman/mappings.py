@@ -52,7 +52,7 @@ mappings_dict = {
         "_unique_id_col": {COL_VALUE: "famid"}
     },
     "phenotype": {
-        "age_at_event_days": {COL_NAME: "age_at_event_days"},
+        "age_at_event_days": {COL_NAME: "latest_exam_age"},
         "phenotype": {COL_NAME: "phenotype"},
         "hpo_id": {COL_NAME: "hpo_id"},
         "observed": {COL_NAME: "observed"},
