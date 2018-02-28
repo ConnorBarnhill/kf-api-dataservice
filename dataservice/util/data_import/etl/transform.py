@@ -1,5 +1,7 @@
-from dataservice.util.data_import.etl.defaults import DEFAULT_ENTITY_TYPES
 from pprint import pprint
+from pandas import DataFrame
+
+from dataservice.util.data_import.etl.defaults import DEFAULT_ENTITY_TYPES
 
 
 class BaseTransformer(object):
@@ -65,7 +67,10 @@ class BaseTransformer(object):
         Extract subset of dataframe by entity_type and unique id of the entity
         """
         # Get original entity dataframe
-        data_df = entity_dfs.get(entity_type, entity_dfs['default'])
+        data_df = entity_dfs.get(entity_type, entity_dfs.get('default'))
+        if not isinstance(data_df, DataFrame) and data_df is None:
+            return None
+
         # Get the unique id column for this dataframe
         _id = self.mapper.get_id_col(entity_type)
 
