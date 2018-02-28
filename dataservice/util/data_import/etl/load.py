@@ -167,12 +167,17 @@ class BaseLoader(object):
         """
         print('Loading {}s ...'.format('family_relationship'))
 
+        entities_to_load = entity_dict.get('family_relationship')
+        if not entities_to_load:
+            print('\nExpected to load {0} but 0 {0}s were found to load.\n'.
+                  format('family_relationship'))
+            return
+
         if not relation_keys:
             relation_keys = ['mother', 'father']
 
-        families = entity_dict['family_relationship']
         entities = []
-        for family in families:
+        for family in entities_to_load:
             for r in relation_keys:
                 rel = self._create_family_relationship(r, family)
                 if rel:
