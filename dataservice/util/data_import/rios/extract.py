@@ -9,6 +9,7 @@ from dataservice.util.data_import.utils import (
 
 DATA_DIR = '/Users/singhn4/Projects/kids_first/data/Rios_Wise_2016'
 DBGAP_DIR = os.path.join(DATA_DIR, 'dbgap')
+MANIFESTS_DIR = os.path.join(DATA_DIR, 'manifests')
 
 
 class Extractor(object):
@@ -21,6 +22,7 @@ class Extractor(object):
         """
         if not filepaths:
             filepaths = os.listdir(DBGAP_DIR)
+            filepaths.extend(os.listdir(MANIFESTS_DIR))
 
         study_files = [{"study_file_name": f}
                        for f in filepaths]
@@ -187,6 +189,35 @@ class Extractor(object):
         del df['SEX']
         return df
 
+    @reformat_column_names
+    @dropna_rows_cols
+    def read_seq_exp_data(self, filepath=None):
+        """
+        Read sequencing experiment data
+        """
+        if not filepath:
+            filepath = os.path.join(MANIFESTS_DIR, 'manifest_171210.csv')
+
+        df = pd.read_csv(filepath)
+        df['Sample Description'] = df['Sample Description'].apply(
+            lambda x: x.split(':')[-1].strip())
+        df.describe(include=['O']).T.sort_values('unique', ascending=False)
+
+        # Subject sample mapping
+        filepath = os.path.join(DBGAP_DIR,
+                                'HL132375-01A1_V2_SubjectSampleMappingDS.txt')
+        subject_sample_df = pd.read_csv(filepath, delimiter='\t')
+
+        # Merge with subject samples
+        df = pd.merge(subject_sample_df, df, left_on='SAMPLE_ID',
+                      right_on='Sample Description')
+
+        # Add unique col
+        def func(row): return "_".join(['seq_exp', str(row.name)])
+        df['seq_exp_id'] = df.apply(func, axis=1)
+
+        return df
+
     def build_dfs(self):
         """
         Read in all entities and join into a single table
@@ -222,6 +253,9 @@ class Extractor(object):
         # Mapped Phenotype df
         phenotype_df1 = self.create_phenotype_df(phenotype_df)
 
+        # Sequencing Experiment
+        seq_exp_df = self.read_seq_exp_data()
+
         # Basic participant
         # Merge subject + phenotype
         df1 = pd.merge(subject_df, phenotype_df, on='subject_id')
@@ -254,7 +288,7 @@ class Extractor(object):
             'phenotype': phenotype_df1,
             'sample': sample_df,
             'aliquot': sample_df,
-            'sequencing_experiment': sample_df,
+            'sequencing_experiment': seq_exp_df,
             'family_relationship': family_df,
             'default': participant_df
         }
