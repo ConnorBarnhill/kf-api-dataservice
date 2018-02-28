@@ -4,11 +4,12 @@ DEFAULT_ENTITY_TYPES = [
     'study_file',
     'participant',
     'demographic',
-    # 'diagnosis',
+    'diagnosis',
     'sample',
     'aliquot',
     'sequencing_experiment',
-    # 'genomic_file',
-    'family_relationship'
-    # 'phenotype'
+    'genomic_file',
+    'family_relationship',
+    'phenotype',
+    'outcome'
 ]
