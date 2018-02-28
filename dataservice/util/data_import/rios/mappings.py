@@ -129,16 +129,16 @@ mappings_dict = {
         "_unique_id_col": {COL_VALUE: "sample_id"}
     },
     "sequencing_experiment": {
-        "external_id": {COL_NAME: "sample_id"},
-        "experiment_date": {COL_NAME: "date"},
+        "external_id": {COL_NAME: "sample_description"},
+        "experiment_date": None,
         "experiment_strategy": {COL_NAME: "sample_use",
                                 COL_VALUE: {"Seq_DNA_WholeGenome": "WGS"}},
         "center": {COL_VALUE: "HudsonAlpha Institute for Biotechnology"},
-        "library_name": None,
+        "library_name": {COL_NAME: "a_library"},
         "library_strand": None,
         "is_paired_end": {COL_VALUE: "True", COL_TYPE: "boolean"},
-        "platform": 'unknown',
-        "instrument_model": None,
+        "platform": {COL_VALUE: "Illumina"},
+        "instrument_model": {COL_VALUE: "HiSeq X"},
         "max_insert_size": None,
         "mean_insert_size": None,
         "mean_depth": None,
@@ -147,10 +147,10 @@ mappings_dict = {
         "_links": {
             'aliquot': {
                 'target_fk_col': {COL_VALUE: 'aliquot_id'},
-                'source_fk_col': {COL_NAME: "sample_id"}
+                'source_fk_col': {COL_NAME: "sample_description"}
             }
         },
-        "_unique_id_col": {COL_VALUE: "sample_id"}
+        "_unique_id_col": {COL_VALUE: "seq_exp_id"}
     },
     "genomic_file": {
         "uuid": {COL_NAME: "uuid"},
