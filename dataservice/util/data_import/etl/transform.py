@@ -25,6 +25,7 @@ class BaseTransformer(object):
 
         # For each entity type
         for entity_type in entity_type_list:
+            print('Begin transformation for {}'.format(entity_type))
             # Get unique entities
             df = self._get_entity_df(entity_type, entity_dfs)
             # None or empty df
