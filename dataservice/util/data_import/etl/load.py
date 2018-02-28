@@ -57,7 +57,7 @@ class BaseLoader(object):
 
             # Create all entity objects and save to db
             self._create_entities(model, entity_dict)
-            print('Completed loading {}'.format(entity_type))
+            print('Completed loading {}\n'.format(entity_type))
 
         # Create family relationships
         if 'family_relationship' in entity_types:
@@ -73,9 +73,15 @@ class BaseLoader(object):
         print('Loading {}s ...'.format(entity_type))
 
         # For all entities of entity_type
+        entities_to_load = entity_dict.get(entity_type)
+        if not entities_to_load:
+            print('\nExpected to load {0} but 0 {0}s were found to load.\n'.
+                  format(entity_type))
+            return
+
         _ids = []
         entities = []
-        for i, params in enumerate(entity_dict[entity_type]):
+        for i, params in enumerate(entities_to_load):
             print('\tCreating {} # {}'.format(entity_type, i))
 
             # Save ids
