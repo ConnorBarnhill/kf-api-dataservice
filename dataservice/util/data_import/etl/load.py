@@ -92,8 +92,8 @@ class BaseLoader(object):
             if '_links' in params:
                 linked_entities = params['_links']
                 for linked_entity, _params in linked_entities.items():
-                    if not (('source_fk_col' in _params) and
-                            ('target_fk_col' in params)):
+                    if (('source_fk_col' not in _params) and
+                            ('target_fk_col' not in params)):
                         print('Error loading {0}. Missing foreign key info.'
                               ' Check mappings for {0}'
                               .format(entity_type))
