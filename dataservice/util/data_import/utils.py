@@ -1,3 +1,4 @@
+import json
 import time
 import yaml
 from pandas import notnull
@@ -94,3 +95,13 @@ def time_it(func):
 def read_yaml(filepath):
     with open(filepath, 'r') as yaml_file:
         return yaml.load(yaml_file)
+
+
+def read_json(filepath):
+    with open(filepath, 'r') as json_file:
+        return json.load(json_file)
+
+
+def write_json(data, filepath):
+    with open(filepath, 'w') as json_file:
+        json.dump(data, json_file, sort_keys=True, indent=4, separators=(',', ':'))
