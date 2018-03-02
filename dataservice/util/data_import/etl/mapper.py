@@ -61,12 +61,12 @@ class Mapper(object):
 
         # Get value
         if col_name:
+            if col_name not in row:
+                print('\tWarning - column "{}" not found in source data.'
+                      'Filling in None for property "{}"'.
+                      format(col_name, property_name))
             # From csv row
             mapped_value = row.get(col_name)
-
-            if not mapped_value:
-                print('\tWarning - "{}" not found in source data. Filling in '
-                      'None for property "{}"'.format(col_name, property_name))
 
             # Use mapping func in mapping file to map the value
             if mapped_value and isinstance(mapping.get(COL_VALUE), dict):
