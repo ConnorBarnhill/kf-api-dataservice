@@ -82,7 +82,7 @@ class BaseLoader(object):
         _ids = []
         entities = []
         for i, params in enumerate(entities_to_load):
-            print('\tCreating {} # {}'.format(entity_type, i))
+            # print('\tCreating {} # {}'.format(entity_type, i))
 
             # Save ids
             _ids.append(params['_unique_id_val'])
@@ -100,14 +100,21 @@ class BaseLoader(object):
                         continue
                     source_fk_col = _params['source_fk_col']
                     target_fk_col = _params['target_fk_col']
-                    fk_value = self.entity_id_map[linked_entity][source_fk_col]
+                    try:
+                        fk_value = self.entity_id_map[linked_entity][source_fk_col]
+                    except KeyError as e:
+                        print('Error loading {}, linked entity {} not found'
+                              .format(params, source_fk_col))
+                        params = None
+                        continue
                     params[target_fk_col] = fk_value
                     del params['_links']
-            # Remove the private keys which were only needed for linking
-            self._remove_extra_keys(params)
 
-            # Add to list
-            entities.append(entity_model(**params))
+            if params:
+                # Remove the private keys which were only needed for linking
+                self._remove_extra_keys(params)
+                # Add to list
+                entities.append(entity_model(**params))
 
         # Save to db
         if entities:
