@@ -1,10 +1,10 @@
 import os
-import json
 import pandas as pd
 
 from dataservice.util.data_import.utils import (
     reformat_column_names,
-    dropna_rows_cols
+    dropna_rows_cols,
+    read_json
 )
 
 DATA_DIR = '/Users/singhn4/Projects/kids_first/data/Rios_Wise_2016'
@@ -96,22 +96,6 @@ class Extractor(object):
                 DBGAP_DIR,
                 'HL132375-01A1_V2_SubjectSampleMappingDS.txt')
         return pd.read_csv(filepath, delimiter='\t')
-
-    def create_sample_df(self):
-        """
-        Create sample dataframe
-        """
-        # Sample attributes file
-        sample_attr_df = self.read_sample_attr_data()
-        # Subject sample file
-        subject_sample_df = self.read_subject_sample_data()
-        # Subject file
-        subject_df = self.read_subject_data()
-
-        # Merge sample attributes w subject sample
-        df1 = pd.merge(sample_attr_df, subject_sample_df, on='sample_id')
-        # Merge sample with subject
-        sample_df = pd.merge(df1, subject_df, on='subject_id')
 
     @reformat_column_names
     @dropna_rows_cols
@@ -218,6 +202,43 @@ class Extractor(object):
 
         return df
 
+    @reformat_column_names
+    @dropna_rows_cols
+    def create_genomic_file_df(self, seq_exp_df):
+        """
+        Create genomic file df
+        """
+        # Seq Exp Data
+        seq_exp_df = self.read_seq_exp_data()
+        seq_exp_df = seq_exp_df[['subject_id', 'library',
+                                 'sample_description', 'seq_exp_id']]
+
+        # Genomic file info
+        uuid_dict = read_json(os.path.join(DATA_DIR,
+                                           'genomic_files_by_uuid.json'))
+        gf_df = pd.DataFrame(list(uuid_dict.values()))
+        gf_df['library'] = gf_df['file_name'].apply(
+            lambda fn: fn.split('.')[0])
+
+        # Merge
+        df = pd.merge(seq_exp_df, gf_df, on='library')
+
+        # Reformat
+        df['md5sum'] = df['hashes'].apply(lambda x: x['md5'])
+        df['file_url'] = df['urls'].apply(lambda x: x[0])
+        df['file_format'] = df['file_name'].apply(
+            lambda x: '.'.join(x.split('.')[1:]))
+        df.rename(columns={'did': 'uuid', 'size': 'file_size'}, inplace=True)
+
+        def func(row):
+            if row['file_format'] == 'bam':
+                return 'submitted aligned reads'
+            else:
+                return 'variant calling'
+        df['data_type'] = df.apply(func, axis=1)
+
+        return df
+
     def build_dfs(self):
         """
         Read in all entities and join into a single table
@@ -256,6 +277,9 @@ class Extractor(object):
         # Sequencing Experiment
         seq_exp_df = self.read_seq_exp_data()
 
+        # Genomic file
+        genomic_file_df = self.create_genomic_file_df(seq_exp_df)
+
         # Basic participant
         # Merge subject + phenotype
         df1 = pd.merge(subject_df, phenotype_df, on='subject_id')
@@ -290,6 +314,7 @@ class Extractor(object):
             'aliquot': sample_df,
             'sequencing_experiment': seq_exp_df,
             'family_relationship': family_df,
+            'genomic_file': genomic_file_df,
             'default': participant_df
         }
         return entity_dfs

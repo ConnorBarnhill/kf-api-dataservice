@@ -134,7 +134,7 @@ mappings_dict = {
         "experiment_strategy": {COL_NAME: "sample_use",
                                 COL_VALUE: {"Seq_DNA_WholeGenome": "WGS"}},
         "center": {COL_VALUE: "HudsonAlpha Institute for Biotechnology"},
-        "library_name": {COL_NAME: "a_library"},
+        "library_name": {COL_NAME: "library"},
         "library_strand": None,
         "is_paired_end": {COL_VALUE: "True", COL_TYPE: "boolean"},
         "platform": {COL_VALUE: "Illumina"},
@@ -164,9 +164,9 @@ mappings_dict = {
         "_links": {
             'sequencing_experiment': {
                 'target_fk_col': {COL_VALUE: 'sequencing_experiment_id'},
-                'source_fk_col': {COL_NAME: "rg_barcode"}
+                'source_fk_col': {COL_NAME: "seq_exp_id"}
             }
         },
-        "_unique_id_col": {COL_VALUE: "file_name"}
+        "_unique_id_col": {COL_VALUE: "file_url"}
     }
 }
