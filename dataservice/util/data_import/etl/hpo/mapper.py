@@ -35,13 +35,14 @@ def read_or_create_hpo_map(filepath=None):
     return name_to_id
 
 
+# Read or create hpo map
+name_to_id = read_or_create_hpo_map()
+
+
 def get_term(phenotype_str):
     """
     Try to resolve an hpo term from a string
     """
-    # Read or create hpo map
-    name_to_id = read_or_create_hpo_map()
-
     # Look up HPO Id
     formatted_str = phenotype_str.lower().replace('_', ' ')
     if formatted_str in name_to_id:
