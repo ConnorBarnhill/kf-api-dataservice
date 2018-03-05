@@ -121,7 +121,8 @@ class Extractor(object):
 
         # Add HPOs
         from dataservice.util.data_import.etl.hpo_mapper import mapper
-        phenotype_df = mapper.add_hpo_id_col(phenotype_df)
+        hpo_mapper = mapper.HPOMapper(DATA_DIR)
+        phenotype_df = hpo_mapper.add_hpo_id_col(phenotype_df)
 
         # Map to positive/negative
         def func(row):
