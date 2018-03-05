@@ -77,10 +77,15 @@ class Extractor(object):
 
     @reformat_column_names
     @dropna_rows_cols
-    def create_phenotype_data(self, filepath=None):
+    def read_phenotype_data(self, filepath=None):
         """
         Read phenotype data
         """
+        # Read in cached phenotypes or create if they don't exist
+        hpo_fp = os.path.join(DATA_DIR, 'phenotype_hpo_mapping.txt')
+        if os.path.exists(hpo_fp):
+            return pd.read_csv(hpo_fp, dtype={'SUBJID': str})
+
         filepath = os.path.join(
             DBGAP_DIR,
             '3a_dbGaP_SubjectPhenotypes_ExtracardiacFindingsDS.txt')
@@ -108,29 +113,20 @@ class Extractor(object):
         phenotype_df = pd.melt(df, id_vars='SUBJID', value_vars=phenotype_cols,
                                var_name='phenotype', value_name='observed')
 
-        # Merge with HPO mapping
-        mapping_filepath = os.path.join(DATA_DIR, 'phenotype_hpo_mapping.txt')
-        if os.path.isfile(mapping_filepath):
-            hpo_df = pd.read_csv(mapping_filepath)
-            new_df = pd.merge(hpo_df, phenotype_df, on='phenotype')
-            new_df.rename(columns={"Yes": "hpo_id"}, inplace=True)
-            phenotype_df = new_df[['hpo_id', 'phenotype', 'observed',
-                                   'SUBJID']]
-
         # Remove unkonwns
-        unknown_values = ['none', 'unknown', 'no/not checked' 'not applicable',
-                          'absent']
+        unknown_values = ['none', 'unknown', 'no/not checked',
+                          'not applicable', 'absent']
         phenotype_df = phenotype_df[phenotype_df['observed'].apply(
             lambda x: x not in unknown_values)]
+
+        # Add HPOs
+        from dataservice.util.data_import.etl.hpo_mapper import mapper
+        phenotype_df = mapper.add_hpo_id_col(phenotype_df)
 
         # Map to positive/negative
         def func(row):
             return 'negative' if row['observed'] == 'no' else 'positive'
         phenotype_df['observed'] = phenotype_df.apply(func, axis=1)
-
-        # Clean up hpo_id
-        phenotype_df.loc[(phenotype_df.hpo_id == 'None') | (
-            phenotype_df.hpo_id == '--'), 'hpo_id'] = None
 
         # Merge back in age at event in days
         phenotype_df = pd.merge(phenotype_df, age_at_event_days, on='SUBJID')
@@ -139,20 +135,10 @@ class Extractor(object):
         def func(row): return "_".join(['phenotype', str(row.name)])
         phenotype_df['phenotype_id'] = phenotype_df.apply(func, axis=1)
 
+        # Write to file
+        phenotype_df.to_csv(hpo_fp, index=False)
+
         return phenotype_df
-
-    def read_phenotype_data(self, filepath=None):
-        # if not filepath:
-        #     filepath = os.path.join(DATA_DIR, 'phenotypes.txt')
-        #
-        # if not os.path.isfile(filepath):
-        #     df = self.create_phenotype_data()
-        #     # Write to file
-        #     df.to_csv(filepath)
-        # else:
-        #     df = pd.read_csv(filepath, dtype={'subjid': str})
-
-        return self.create_phenotype_data()
 
     @reformat_column_names
     @dropna_rows_cols
