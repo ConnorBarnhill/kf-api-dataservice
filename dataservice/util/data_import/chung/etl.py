@@ -1,8 +1,8 @@
 from pprint import pprint
 
-from dataservice.util.data_import.rios.extract import Extractor
-from dataservice.util.data_import.rios.transform import Transformer
-from dataservice.util.data_import.rios.load import Loader
+from dataservice.util.data_import.chung.extract import Extractor
+from dataservice.util.data_import.chung.transform import Transformer
+from dataservice.util.data_import.chung.load import Loader
 
 
 def run():

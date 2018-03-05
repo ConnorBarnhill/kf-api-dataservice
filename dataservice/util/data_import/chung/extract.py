@@ -3,11 +3,14 @@ import json
 import pandas as pd
 
 from dataservice.util.data_import.utils import (
-    reformat_column_names,
-    dropna_rows_cols
+    read_json,
+    write_json,
+    cols_to_lower,
+    dropna_rows_cols,
+    reformat_column_names
 )
 
-DATA_DIR = '/Users/singhn4/Projects/kids_first/data/Rios_Wise_2016'
+DATA_DIR = '/Users/singhn4/Projects/kids_first/data/Chung'
 DBGAP_DIR = os.path.join(DATA_DIR, 'dbgap')
 MANIFESTS_DIR = os.path.join(DATA_DIR, 'manifests')
 
@@ -57,166 +60,184 @@ class Extractor(object):
     @reformat_column_names
     @dropna_rows_cols
     def read_subject_data(self, filepath=None):
+        """
+        Read subject data file
+        """
         if not filepath:
             filepath = os.path.join(DBGAP_DIR,
-                                    'HL13237501A1_V3_SubjectDS.txt')
-        df = pd.read_csv(filepath, delimiter='\t', dtype={'SUBJID': str})
-        df = df[['SUBJECT_ID', 'CONSENT']]
+                                    '4a_dbGaP_SubjectDS_corrected_7-16.xlsx')
+        df = pd.read_excel(filepath, dtype={'SUBJECT_ID': str})
 
         # Decode consent ints to consent strings
         def func(row):
-            _map = {0: None,
-                    1: "Health/Medical/Biomedical (IRB)",
-                    2: "Disease-Specific (Musculoskeletal Diseases,"
-                    " IRB)(DS-MUS-SKEL-IRB)"}
-            return _map[row['CONSENT']]
+            _map = {
+                1: "Disease-Specific (Congenital Diaphragmatic Hernia"
+                ", COL, GSO, RD) (DS-CDH-COL-GSO-RD)"}
+            return _map.get(row['CONSENT'])
         df['CONSENT'] = df.apply(func, axis=1)
 
+        # Decode affected status ints to strings
+        def func(row):
+            _map = {0: 'unknown', 1: "affected", 2: "unaffected"}
+            return _map.get(row['AFFECTED_STATUS'])
+        df['AFFECTED_STATUS'] = df.apply(func, axis=1)
         return df
 
     @reformat_column_names
     @dropna_rows_cols
-    def read_sample_attr_data(self, filepath=None):
+    def read_subject_attr_data(self, filepath=None):
         """
-        Read sample attributes file
-        """
-        if not filepath:
-            filepath = os.path.join(DBGAP_DIR,
-                                    'HL132375-01A1_V2_SampleAttributesDS.txt')
-        return pd.read_csv(filepath, delimiter='\t')
-
-    @reformat_column_names
-    @dropna_rows_cols
-    def read_subject_sample_data(self, filepath=None):
-        """
-        Read subject sample mapping file
+        Read subject attributes file
         """
         if not filepath:
             filepath = os.path.join(
                 DBGAP_DIR,
-                'HL132375-01A1_V2_SubjectSampleMappingDS.txt')
-        return pd.read_csv(filepath, delimiter='\t')
+                '3a_dbGaP_SubjectAttributesDS_corrected.6.12.xlsx')
+        df = pd.read_excel(filepath, dtype={'SUBJECT_ID': str})
 
-    def create_sample_df(self):
-        """
-        Create sample dataframe
-        """
-        # Sample attributes file
-        sample_attr_df = self.read_sample_attr_data()
-        # Subject sample file
-        subject_sample_df = self.read_subject_sample_data()
-        # Subject file
-        subject_df = self.read_subject_data()
-
-        # Merge sample attributes w subject sample
-        df1 = pd.merge(sample_attr_df, subject_sample_df, on='sample_id')
-        # Merge sample with subject
-        sample_df = pd.merge(df1, subject_df, on='subject_id')
-
-    @reformat_column_names
-    @dropna_rows_cols
-    def read_phenotype_data(self, filepath=None):
-        if not filepath:
-            filepath = os.path.join(DBGAP_DIR,
-                                    'HL132375-01A1_V2_SubjectPhenotypesDS.txt')
-        df = pd.read_csv(filepath,
-                         delimiter='\t',
-                         dtype={'SUBJID': str})
-
-        # Decode sex ints to gender strings
+        # Decode body_site chars to strings
         def func(row):
-            _map = {1: "male", 2: "female"}
-            return _map[row['Sex']]
-        df['Sex'] = df.apply(func, axis=1)
-
-        # Decode affected status ints to strings
-        def func(row):
-            _map = {0: 'unknown', 1: "not affected", 2: "affected"}
-            return _map[row['AFFSTAT']]
-        df['AFFSTAT'] = df.apply(func, axis=1)
-
-        # Decode proband ints to booleans
-        def func(row):
-            _map = {1: True, 2: False}
-            return _map[row['Proband']]
-        df['Proband'] = df.apply(func, axis=1)
-
-        # Create ethnicity column
-        _map = {'Hispanic': 'hispanic or latino'}
-        df['ethnicity'] = df['Race'].apply(
-            lambda x: _map.get(x, 'not hispanic or latino'))
-
+            _map = {'B': 'blood', 'SK': 'skin', 'D': 'diaphragm',
+                    'SV': 'saliva', 'A': 'amniocytes', 'M': 'amniocytes'}
+            return _map.get(row['body_site'])
+        df['body_site'] = df.apply(func, axis=1)
         return df
-
-    def create_diagnosis_df(self, phenotype_df):
-        """
-        Create diagnosis df from phenotype df
-        """
-        def func(row):
-            _map = {'affected': 'adolescent idiopathic scoliosis',
-                    'not affected': None}
-            return _map.get(row['affstat'], row['affstat'])
-        phenotype_df['diagnosis'] = phenotype_df.apply(func, axis=1)
-        return phenotype_df[['subject_id', 'diagnosis']]
-
-    def create_phenotype_df(self, phenotype_df):
-        """
-        Create phenotype df from original phenotype_df
-        """
-        # Extract columns
-        phenotype_df = phenotype_df[['subject_id', 'affstat']]
-        # Drop unknowns
-        phenotype_df = phenotype_df[phenotype_df.affstat != 'unknown']
-
-        # Add columns
-        def func(row):
-            _map = {'affected': 'positive',
-                    'not affected': 'negative'}
-            return _map.get(row['affstat'], row['affstat'])
-
-        phenotype_df['observed'] = phenotype_df.apply(func, axis=1)
-        phenotype_df['hpo_id'] = 'HP:0002650'
-        phenotype_df['phenotype'] = 'adolescent idiopathic scoliosis'
-        return phenotype_df
 
     @reformat_column_names
     @dropna_rows_cols
     def read_family_data(self, filepath=None):
+        """
+        Read pedigree data
+        """
         if not filepath:
             filepath = os.path.join(DBGAP_DIR,
-                                    'HL132375-01A1_V2_PedgreeDS.txt')
-        df = pd.read_csv(filepath, delimiter='\t', dtype={'SUBJID': str})
+                                    '6a_dbGaP_PedigreeDS_corrected.6.12.xlsx')
+        df = pd.read_excel(filepath)
         del df['SEX']
+
         return df
 
     @reformat_column_names
     @dropna_rows_cols
-    def read_seq_exp_data(self, filepath=None):
+    def read_sample_manifests(self, manifest_dir):
         """
-        Read sequencing experiment data
+        Read and combine all sample manifest sheets
+        """
+        if not manifest_dir:
+            manifest_dir = MANIFESTS_DIR
+
+        # Sample manifests
+        # Combine all sample manifest sheets
+        dfs = [pd.read_excel(os.path.join(manifest_dir, filename))
+
+               for filename in os.listdir(manifest_dir)
+
+               ]
+        df = pd.concat(dfs)
+        df = df[df['Sample ID'].notnull()]
+
+        df.rename(columns={'Alias.2': 'is_proband'}, inplace=True)
+
+        return df[['Concentration', 'Volume', 'Sample ID', 'Sample Type',
+                   'is_proband']]
+
+    @reformat_column_names
+    @dropna_rows_cols
+    def read_subject_sample_data(self, filepath=None):
+        if not filepath:
+            filepath = os.path.join(
+                DBGAP_DIR,
+                '5a_dbGaP_SubjectSampleMappingDS cumulative.xlsx')
+        return pd.read_excel(filepath, delimiter='\t')
+
+    @reformat_column_names
+    @dropna_rows_cols
+    def read_demographic_data(self, filepath=None):
+        """
+        Read demographic data from phenotype file
         """
         if not filepath:
-            filepath = os.path.join(MANIFESTS_DIR, 'manifest_171210.csv')
+            filepath = os.path.join(DBGAP_DIR,
+                                    '2a_dbGaP_SubjectPhenotypesDS.xlsx')
+        df = pd.read_excel(filepath)
+        # Make all values lower case
+        for col in ['Ethnicity', 'Race']:
+            df[col] = df[col].apply(lambda x: str(x).lower().strip())
+        return df[['SUBJECT_ID', 'SEX', 'Ethnicity', 'Race']]
 
-        df = pd.read_csv(filepath)
-        df['Sample Description'] = df['Sample Description'].apply(
-            lambda x: x.split(':')[-1].strip())
-        df.describe(include=['O']).T.sort_values('unique', ascending=False)
+    @reformat_column_names
+    @dropna_rows_cols
+    def read_phenotype_data(self, filepath=None):
+        """
+        Read phenotype file and insert HPO IDs
+        """
+        if not filepath:
+            filepath = os.path.join(
+                DBGAP_DIR, '2a_dbGaP_SubjectPhenotypesDS.xlsx')
 
-        # Subject sample mapping
-        filepath = os.path.join(DBGAP_DIR,
-                                'HL132375-01A1_V2_SubjectSampleMappingDS.txt')
-        subject_sample_df = pd.read_csv(filepath, delimiter='\t')
+        df = pd.read_excel(filepath)
+        df.drop(['Ethnicity', 'Race', 'SEX', 'discharge_status', 'ISOLATED'],
+                inplace=True, axis=1)
+        # Reshape to build the phenotypes df
+        cols = df.columns.tolist()[1:]
+        phenotype_df = pd.melt(df, id_vars='SUBJECT_ID', value_vars=cols,
+                               var_name='phenotype', value_name='value')
 
-        # Merge with subject samples
-        df = pd.merge(subject_sample_df, df, left_on='SAMPLE_ID',
-                      right_on='Sample Description')
+        # Drop rows where value is NaN
+        phenotype_df = phenotype_df[pd.notnull(phenotype_df['value'])]
 
-        # Add unique col
-        def func(row): return "_".join(['seq_exp', str(row.name)])
-        df['seq_exp_id'] = df.apply(func, axis=1)
+        # Decode phenotypes to descriptive strings
+        def func(row):
+            _map = {0: 'no', 1: 'yes'}
+            return _map.get(row['value'], row['value'])
+        phenotype_df['value'] = phenotype_df.apply(func, axis=1)
 
-        return df
+        # Decode phenotypes to descriptive strings
+        def func(row):
+            # Always take most specific value
+            if row['value'] not in ['yes', 'no']:
+                val = row['value']
+            else:
+                _map = {'CHD': 'congenital heart defect',
+                        'CNS': 'central nervous system defect',
+                        'GI': 'gastrointestinal defect'}
+                val = _map.get(row['phenotype'], 'congenital birth defect')
+            return val
+        phenotype_df['phenotype'] = phenotype_df.apply(func, axis=1)
+
+        # Set observed
+        phenotype_df['observed'] = phenotype_df['value'].apply(
+            lambda x: 'positive' if x != 'no' else 'negative')
+        del phenotype_df['value']
+
+        # Add HPOs
+        from dataservice.util.data_import.etl.hpo import mapper
+        hpo_mapper = mapper.HPOMapper(DATA_DIR)
+        phenotype_df = hpo_mapper.add_hpo_id_col(phenotype_df)
+        return phenotype_df
+
+    @reformat_column_names
+    @dropna_rows_cols
+    def read_outcome_data(self, filepath=None):
+        """
+        Read outcome data from phenotype file
+        """
+        if not filepath:
+            filepath = os.path.join(DBGAP_DIR,
+                                    '2a_dbGaP_SubjectPhenotypesDS.xlsx')
+        df = pd.read_excel(filepath)
+
+        # Replace NaN values with None
+        df['discharge_status'] = df['discharge_status'].where(
+            (pd.notnull(df['discharge_status'])), 999)
+
+        # Map discharge status
+        # 1=Alive 4=Deceased 0=Fetal sample 8=unknown NA=Not applicable
+        def func(row):
+            _map = {0: 'alive', 1: 'deceased', 4: 'fetal sample', 8: 'unknown'}
+            return _map.get(int(row['discharge_status']), 'not applicable')
+        df['discharge_status'] = df.apply(func, axis=1)
+        return df[['SUBJECT_ID', 'discharge_status']]
 
     def build_dfs(self):
         """
@@ -229,41 +250,8 @@ class Extractor(object):
         # Study
         study_df = self.read_study_data()
 
-        # Study
+        # Study files
         study_files_df = self.read_study_file_data()
-
-        # Subject data
-        subject_df = self.read_subject_data()
-
-        # Sample attributes file
-        sample_attr_df = self.read_sample_attr_data()
-
-        # Subject sample file
-        subject_sample_df = self.read_subject_sample_data()
-
-        # Family
-        family_df = self.read_family_data()
-
-        # Phenotype file
-        phenotype_df = self.read_phenotype_data()
-
-        # Diagnosis
-        diagnosis_df = self.create_diagnosis_df(phenotype_df)
-
-        # Mapped Phenotype df
-        phenotype_df1 = self.create_phenotype_df(phenotype_df)
-
-        # Sequencing Experiment
-        seq_exp_df = self.read_seq_exp_data()
-
-        # Basic participant
-        # Merge subject + phenotype
-        df1 = pd.merge(subject_df, phenotype_df, on='subject_id')
-        # Merge family
-        participant_df = pd.merge(df1, family_df, on='subject_id')
-
-        # Add study to basic participant df
-        participant_df = self._add_study_cols(study_df, participant_df)
 
         # Add study to investigator df
         study_investigator_df = self._add_study_cols(study_df, investigator_df)
@@ -271,26 +259,12 @@ class Extractor(object):
         # Add study to study files df
         study_study_files_df = self._add_study_cols(study_df, study_files_df)
 
-        # Sample
-        # Merge sample attributes w subject sample
-        df1 = pd.merge(sample_attr_df, subject_sample_df, on='sample_id')
-        # Merge sample with subject
-        sample_df = pd.merge(df1, subject_df, on='subject_id')
-
         # Dict to store dfs for each entity
         entity_dfs = {
             'study': study_investigator_df,
             'study_file': study_study_files_df,
-            'investigator': investigator_df,
-            'participant': participant_df,
-            'demographic': participant_df,
-            'diagnosis': diagnosis_df,
-            'phenotype': phenotype_df1,
-            'sample': sample_df,
-            'aliquot': sample_df,
-            'sequencing_experiment': seq_exp_df,
-            'family_relationship': family_df,
-            'default': participant_df
+            'investigator': investigator_df
+            # 'default': participant_df
         }
         return entity_dfs
 
