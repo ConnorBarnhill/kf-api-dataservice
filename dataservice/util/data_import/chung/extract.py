@@ -1,6 +1,7 @@
 import os
 import json
 import pandas as pd
+from numpy import NaN
 
 from dataservice.util.data_import.utils import (
     read_json,
@@ -105,44 +106,6 @@ class Extractor(object):
 
     @reformat_column_names
     @dropna_rows_cols
-    def read_family_data(self, filepath=None):
-        """
-        Read pedigree data
-        """
-        if not filepath:
-            filepath = os.path.join(DBGAP_DIR,
-                                    '6a_dbGaP_PedigreeDS_corrected.6.12.xlsx')
-        df = pd.read_excel(filepath)
-        del df['SEX']
-
-        return df
-
-    @reformat_column_names
-    @dropna_rows_cols
-    def read_sample_manifests(self, manifest_dir):
-        """
-        Read and combine all sample manifest sheets
-        """
-        if not manifest_dir:
-            manifest_dir = MANIFESTS_DIR
-
-        # Sample manifests
-        # Combine all sample manifest sheets
-        dfs = [pd.read_excel(os.path.join(manifest_dir, filename))
-
-               for filename in os.listdir(manifest_dir)
-
-               ]
-        df = pd.concat(dfs)
-        df = df[df['Sample ID'].notnull()]
-
-        df.rename(columns={'Alias.2': 'is_proband'}, inplace=True)
-
-        return df[['Concentration', 'Volume', 'Sample ID', 'Sample Type',
-                   'is_proband']]
-
-    @reformat_column_names
-    @dropna_rows_cols
     def read_subject_sample_data(self, filepath=None):
         if not filepath:
             filepath = os.path.join(
@@ -214,6 +177,11 @@ class Extractor(object):
         from dataservice.util.data_import.etl.hpo import mapper
         hpo_mapper = mapper.HPOMapper(DATA_DIR)
         phenotype_df = hpo_mapper.add_hpo_id_col(phenotype_df)
+
+        # Add unique col
+        def func(row): return "_".join(['phenotype', str(row.name)])
+        phenotype_df['phenotype_id'] = phenotype_df.apply(func, axis=1)
+
         return phenotype_df
 
     @reformat_column_names
@@ -237,7 +205,140 @@ class Extractor(object):
             _map = {0: 'alive', 1: 'deceased', 4: 'fetal sample', 8: 'unknown'}
             return _map.get(int(row['discharge_status']), 'not applicable')
         df['discharge_status'] = df.apply(func, axis=1)
-        return df[['SUBJECT_ID', 'discharge_status']]
+
+        # Add unique col
+        def func(row): return "_".join(['outcome', str(row.name)])
+        df['outcome_id'] = df.apply(func, axis=1)
+
+        return df[['SUBJECT_ID', 'discharge_status', 'outcome_id']]
+
+    @reformat_column_names
+    @dropna_rows_cols
+    def read_family_data(self, filepath=None):
+        """
+        Read pedigree data
+        """
+        if not filepath:
+            filepath = os.path.join(DBGAP_DIR,
+                                    '6a_dbGaP_PedigreeDS_corrected.6.12.xlsx')
+        df = pd.read_excel(filepath)
+        del df['SEX']
+
+        return df
+
+    @reformat_column_names
+    @dropna_rows_cols
+    def read_sample_manifests(self, manifest_dir=None):
+        """
+        Read and combine all sample manifest sheets
+        """
+        if not manifest_dir:
+            manifest_dir = MANIFESTS_DIR
+
+        # Sample manifests
+        # Combine all sample manifest sheets
+        dfs = [pd.read_excel(os.path.join(manifest_dir, filename))
+
+               for filename in os.listdir(manifest_dir)
+
+               ]
+        df = pd.concat(dfs)
+        df = df[df['Sample ID'].notnull()]
+        df.rename(columns={'Alias.2': 'is_proband'}, inplace=True)
+        df['is_proband'] = df['is_proband'].apply(
+            lambda x: True if x == 'Proband' else False)
+
+        # Clean up volume and concentration cols
+        def func(row):
+            val = str(row['Volume']).strip("uL")
+            try:
+                val = int(val)
+            except ValueError:
+                val = NaN
+            return val
+        df['Volume'] = df.apply(func, axis=1)
+
+        def func(row):
+            val = str(row['Concentration']).strip("ng/uL")
+            try:
+                val = int(val)
+            except ValueError:
+                val = NaN
+            return val
+        df['Concentration'] = df.apply(func, axis=1)
+
+        df = df[pd.notnull(df.Concentration)]
+        df = df[pd.notnull(df.Volume)]
+        df.Concentration = df.Concentration.astype('int')
+        df.Volume = df.Volume.astype('int')
+
+        return df[['Concentration', 'Volume', 'Sample ID', 'Sample Type',
+                   'is_proband']]
+
+    @reformat_column_names
+    @dropna_rows_cols
+    def read_genomic_file_manifest(self, filepath=None):
+        """
+        Read genomic file manifest (ties subjects to genomic files)
+        """
+        if not filepath:
+            filepath = os.path.join(DATA_DIR, 'sample.txt')
+
+        df = pd.read_csv(filepath, delimiter='\t')
+        return df[['entity:sample_id', 'aligned_reads', 'crai_or_bai_path',
+                   'cram_or_bam_path', 'data_type', 'library-1_name',
+                   'library-2_name', 'max_insert_size', 'mean_depth',
+                   'mean_insert_size', 'mean_read_length', 'min_insert_size',
+                   'sample_alias', 'total_reads']]
+
+    def read_genomic_files_info(self, filepath=None):
+        """
+        Read genomic file info
+        """
+        if not filepath:
+            filepath = os.path.join(DATA_DIR, 'genomic_files_by_uuid.json')
+        data = read_json(filepath)
+        df = pd.DataFrame(list(data.values()))
+
+        # Reformat
+        df['md5sum'] = df['hashes'].apply(lambda x: x['md5'])
+        df['file_url'] = df['urls'].apply(lambda x: x[0])
+        df['file_format'] = df['file_name'].apply(
+            lambda x: '.'.join(x.split('.')[1:]))
+        df.rename(columns={'did': 'uuid', 'size': 'file_size'}, inplace=True)
+
+        # Data type
+        def func(x):
+            x = x.strip()
+            if x == 'cram':
+                val = 'submitted aligned reads'
+            elif x.endswith('crai'):
+                val = 'submitted aligned reads index'
+            elif 'vcf' in x:
+                val = 'variant calling'
+            else:
+                val = None
+            return val
+        df['data_type'] = df['file_format'].apply(func)
+        df['subject_id'] = df['file_name'].apply(
+            lambda file_name: file_name.split('.')[0])
+        return df
+
+    def create_seq_exp_df(self, aliquot_df, gf_manifest_df):
+        """
+        Create sequencing_experiment df from aliquots and genomic_file manifest
+        """
+        seq_exp_df = pd.merge(gf_manifest_df,
+                              aliquot_df[['subject_id', 'sample_id',
+                                          'sample_use']],
+                              left_on='sample_alias',
+                              right_on='subject_id')
+
+        # Add unique col
+        def func(row): return "_".join(['seq_exp_id', str(row.name)])
+        seq_exp_df['seq_exp_id'] = seq_exp_df.apply(func, axis=1)
+
+        return seq_exp_df
 
     def build_dfs(self):
         """
@@ -253,6 +354,73 @@ class Extractor(object):
         # Study files
         study_files_df = self.read_study_file_data()
 
+        # Subject data
+        subject_df = self.read_subject_data()
+        subject_attr_df = self.read_subject_attr_data()
+
+        # Demographic data
+        demographic_df = self.read_demographic_data()
+
+        # Family data
+        family_df = self.read_family_data()
+
+        # Sample manifest data
+        sample_manifest_df = self.read_sample_manifests()
+
+        # Subject sample mapping data
+        subject_sample_df = self.read_subject_sample_data()
+
+        # Genomic file manifests
+        gf_manifest_df = self.read_genomic_file_manifest()
+
+        # Genomic files info
+        gf_file_info_df = self.read_genomic_files_info()
+
+        # Phenotype data
+        phenotype_df = self.read_phenotype_data()
+
+        # Outcome data
+        outcome_df = self.read_outcome_data()
+
+        # Participant df
+        # Merge subject + subject attributes
+        df1 = pd.merge(subject_df, subject_attr_df, on='subject_id')
+        df1.head()
+        # Merge family
+        df2 = pd.merge(df1, family_df, on='subject_id')
+        # Merge proband from sample manifests
+        participant_df = pd.merge(
+            df2,
+            sample_manifest_df[['sample_id', 'is_proband']], on='sample_id')
+        # Add study to basic participant df
+        participant_df = self._add_study_cols(study_df, participant_df)
+
+        # Demographic df
+        demographic_df = pd.merge(demographic_df, participant_df,
+                                  on='subject_id')
+
+        # Sample df
+        # Merge with subject data
+        df3 = pd.merge(participant_df, subject_sample_df[[
+                       'subject_id', 'sample_use']], on='subject_id')
+        # Merge with sample manifests
+        sample_df = pd.merge(df3, sample_manifest_df, on='sample_id')
+
+        # Sequencing experiment df
+        seq_exp_df = self.create_seq_exp_df(sample_df, gf_manifest_df)
+
+        # Genomic file df
+        genomic_file_df = pd.merge(gf_file_info_df, seq_exp_df,
+                                   on='subject_id')
+
+        # Phenotype df
+        # Merge with participant df
+        phenotype_df = pd.merge(phenotype_df, participant_df, on='subject_id')
+        phenotype_df.head()
+
+        # Outcome df
+        outcome_df = pd.merge(outcome_df, participant_df, on='subject_id')
+
         # Add study to investigator df
         study_investigator_df = self._add_study_cols(study_df, investigator_df)
 
@@ -263,8 +431,17 @@ class Extractor(object):
         entity_dfs = {
             'study': study_investigator_df,
             'study_file': study_study_files_df,
-            'investigator': investigator_df
-            # 'default': participant_df
+            'investigator': investigator_df,
+            'participant': participant_df,
+            'demographic': demographic_df,
+            'diagnosis': phenotype_df,
+            'phenotype': phenotype_df,
+            'outcome': outcome_df,
+            'sample': sample_df,
+            'aliquot': sample_df,
+            'sequencing_experiment': seq_exp_df,
+            'genomic_file': genomic_file_df,
+            'default': participant_df
         }
         return entity_dfs
 

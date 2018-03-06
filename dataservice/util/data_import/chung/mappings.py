@@ -75,13 +75,10 @@ mappings_dict = {
                 'source_fk_col': {COL_NAME: "subject_id"}
             }
         },
-        "_unique_id_col": {COL_VALUE: "phenotype_id"}
+        "_unique_id_col": {COL_VALUE: "outcome_id"}
     },
     "demographic": {
-        "ethnicity": {COL_NAME: "ethnicity",
-                      COL_VALUE: {"hispanic": "hispanic or latino",
-                                  "non-hispanic": "not hispanic or latino"}},
-
+        "ethnicity": {COL_NAME: "ethnicity"},
         "gender": {COL_NAME: "sex",
                    COL_VALUE: {"F": "female",
                                "M": "male"}},
@@ -97,7 +94,7 @@ mappings_dict = {
     },
     "diagnosis": {
         "age_at_event_days": None,
-        "diagnosis": {COL_NAME: "diagnosis"},
+        "diagnosis": {COL_NAME: "phenotype"},
         "tumor_location": None,
         "diagnosis_category": None,
         "_links": {
@@ -106,11 +103,11 @@ mappings_dict = {
                 'source_fk_col': {COL_NAME: "subject_id"}
             }
         },
-        "_unique_id_col": {COL_VALUE: "subject_id"}
+        "_unique_id_col": {COL_VALUE: "phenotype_id"}
     },
     "sample": {
         "external_id": {COL_NAME: "sample_id"},
-        "composition": {COL_NAME: "histological_type"},
+        "composition": None,
         "age_at_event_days": None,
         "tumor_descriptor": None,
         "anatomical_site": {COL_NAME: "body_site"},
@@ -128,10 +125,9 @@ mappings_dict = {
     "aliquot": {
         "external_id": {COL_NAME: "sample_id"},
         "analyte_type": {COL_NAME: "analyte_type"},
-        "volume": None,
-        "concentration": None,
-        "shipment_destination": {COL_VALUE: "HudsonAlpha Institute"
-                                 " for Biotechnology"},
+        "volume": {COL_NAME: "volume"},
+        "concentration": {COL_NAME: "concentration"},
+        "shipment_destination": {COL_VALUE: "Broad Institute"},
         "shipment_origin": {COL_NAME: "sample_source"},
         "shipment_date": None,
         "_links": {
@@ -143,25 +139,25 @@ mappings_dict = {
         "_unique_id_col": {COL_VALUE: "sample_id"}
     },
     "sequencing_experiment": {
-        "external_id": {COL_NAME: "sample_description"},
+        "external_id": {COL_NAME: "sample_id"},
         "experiment_date": None,
         "experiment_strategy": {COL_NAME: "sample_use",
                                 COL_VALUE: {"Seq_DNA_WholeGenome": "WGS"}},
-        "center": {COL_VALUE: "HudsonAlpha Institute for Biotechnology"},
-        "library_name": {COL_NAME: "a_library"},
+        "center": {COL_VALUE: "Broad Institute"},
+        "library_name": {COL_NAME: "library-1_name"},
         "library_strand": None,
         "is_paired_end": {COL_VALUE: "True", COL_TYPE: "boolean"},
         "platform": {COL_VALUE: "Illumina"},
         "instrument_model": {COL_VALUE: "HiSeq X"},
-        "max_insert_size": None,
-        "mean_insert_size": None,
-        "mean_depth": None,
-        "total_reads": None,
-        "mean_read_length": None,
+        "max_insert_size": {COL_NAME: "max_insert_size"},
+        "mean_insert_size": {COL_NAME: "mean_insert_size"},
+        "mean_depth": {COL_NAME: "mean_depth"},
+        "total_reads": {COL_NAME: "total_reads"},
+        "mean_read_length": {COL_NAME: "mean_read_length"},
         "_links": {
             'aliquot': {
                 'target_fk_col': {COL_VALUE: 'aliquot_id'},
-                'source_fk_col': {COL_NAME: "sample_description"}
+                'source_fk_col': {COL_NAME: "sample_id"}
             }
         },
         "_unique_id_col": {COL_VALUE: "seq_exp_id"}
@@ -178,9 +174,9 @@ mappings_dict = {
         "_links": {
             'sequencing_experiment': {
                 'target_fk_col': {COL_VALUE: 'sequencing_experiment_id'},
-                'source_fk_col': {COL_NAME: "rg_barcode"}
+                'source_fk_col': {COL_NAME: "seq_exp_id"}
             }
         },
-        "_unique_id_col": {COL_VALUE: "file_name"}
+        "_unique_id_col": {COL_VALUE: "file_url"}
     }
 }
