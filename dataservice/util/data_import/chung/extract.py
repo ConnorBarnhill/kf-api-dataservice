@@ -286,7 +286,7 @@ class Extractor(object):
 
         df = pd.read_csv(filepath, delimiter='\t')
         return df[['entity:sample_id', 'aligned_reads', 'crai_or_bai_path',
-                   'cram_or_bam_path', 'data_type', 'library-1_name',
+                   'cram_or_bam_path', 'library-1_name',
                    'library-2_name', 'max_insert_size', 'mean_depth',
                    'mean_insert_size', 'mean_read_length', 'min_insert_size',
                    'sample_alias', 'total_reads']]

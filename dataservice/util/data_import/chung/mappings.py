@@ -128,7 +128,7 @@ mappings_dict = {
         "volume": {COL_NAME: "volume"},
         "concentration": {COL_NAME: "concentration"},
         "shipment_destination": {COL_VALUE: "Broad Institute"},
-        "shipment_origin": {COL_NAME: "sample_source"},
+        "shipment_origin": None,
         "shipment_date": None,
         "_links": {
             'sample': {
