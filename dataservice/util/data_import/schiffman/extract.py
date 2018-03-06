@@ -80,7 +80,8 @@ class Extractor(object):
             func, axis=1)
 
         # Create family_id column
-        participant_df.rename(columns={'ewing_trio_number': 'family_id'})
+        participant_df.rename(columns={'ewing_trio_number': 'family_id'},
+                              inplace=True)
 
         return participant_df
 
