@@ -124,7 +124,7 @@ mappings_dict = {
         "composition": {COL_NAME: "sample_type"},
         "age_at_event_days": None,
         "tumor_descriptor": None,
-        "anatomical_site": {COL_NAME: "topology"},
+        "anatomical_site": {COL_NAME: "topography"},
         "tissue_type": None,
         "_links": {
             'participant': {
