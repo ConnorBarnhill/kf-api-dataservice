@@ -230,12 +230,18 @@ class Extractor(object):
             lambda x: '.'.join(x.split('.')[1:]))
         df.rename(columns={'did': 'uuid', 'size': 'file_size'}, inplace=True)
 
-        def func(row):
-            if row['file_format'] == 'bam':
-                return 'submitted aligned reads'
+        def func(x):
+            x = x.strip()
+            if x == 'bam':
+                val = 'submitted aligned reads'
+            elif 'fastq' in x:
+                val = 'submitted reads'
+            elif 'vcf' in x:
+                val = 'variant calling'
             else:
-                return 'variant calling'
-        df['data_type'] = df.apply(func, axis=1)
+                val = None
+            return val
+        df['data_type'] = df['file_format'].apply(func)
 
         return df
 
