@@ -13,6 +13,6 @@ def run(module_name):
     try:
         etl_module = import_module(module_path)
     except ModuleNotFoundError as e:
-        print('ETL module {} does not exist'.format(module_path))
+        print('ModuleNotFoundError: {}'.format(e.msg))
     else:
         etl_module.run()
