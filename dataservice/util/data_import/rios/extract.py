@@ -217,8 +217,8 @@ class Extractor(object):
         uuid_dict = read_json(os.path.join(DATA_DIR,
                                            'genomic_files_by_uuid.json'))
         gf_df = pd.DataFrame(list(uuid_dict.values()))
-        gf_df['library'] = gf_df['file_name'].apply(
-            lambda fn: fn.split('.')[0])
+        gf_df['library'] = gf_df['urls'].apply(
+            lambda urls: os.path.dirname(urls[0]).split('/')[-1])
 
         # Merge
         df = pd.merge(seq_exp_df, gf_df, on='library')
