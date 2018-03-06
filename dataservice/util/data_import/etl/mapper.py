@@ -63,7 +63,7 @@ class Mapper(object):
         if col_name:
             if col_name not in row:
                 print('\tWarning - column "{}" not found in source data.'
-                      'Filling in None for property "{}"'.
+                      ' Filling in None for property "{}"'.
                       format(col_name, property_name))
             # From csv row
             mapped_value = row.get(col_name)

@@ -103,8 +103,8 @@ class BaseLoader(object):
                     try:
                         fk_value = self.entity_id_map[linked_entity][source_fk_col]
                     except KeyError as e:
-                        print('Error loading {}, linked entity {} not found'
-                              .format(params, source_fk_col))
+                        pprint('Error loading {}, linked entity {} not found'
+                               .format(params, source_fk_col))
                         params = None
                         continue
                     params[target_fk_col] = fk_value
