@@ -1,5 +1,4 @@
 import os
-import json
 import pandas as pd
 
 from dataservice.util.data_import.utils import (
@@ -7,11 +6,12 @@ from dataservice.util.data_import.utils import (
     dropna_rows_cols,
     cols_to_lower
 )
+from dataservice.util.data_import.etl.extract import BaseExtractor
 
 DATA_DIR = '/Users/singhn4/Projects/kids_first/data/Schiffman'
 
 
-class Extractor(object):
+class Extractor(BaseExtractor):
 
     @reformat_column_names
     @dropna_rows_cols
@@ -153,36 +153,14 @@ class Extractor(object):
         return df
 
     def create_genomic_file_df(self, df):
+        """
+        Create genomic file df
+        """
+        filepath = os.path.join(DATA_DIR, 'genomic_file_uuid.json')
+        gf_df = super(Extractor, self).read_genomic_files_info(filepath)
+
         df = df[['build_id', 'bam_path']]
         df['file_name'] = df['bam_path'].apply(lambda p: os.path.basename(p))
-
-        def get_ext(fp):
-            filename = os.path.basename(fp)
-            parts = filename.split('.')
-            if len(parts) > 2:
-                ext = '.'.join(parts[1:])
-            else:
-                ext = parts[-1]
-            return ext
-
-        with open(os.path.join(DATA_DIR,
-                               'genomic_file_uuid.json'), 'r') as json_file:
-            uuid_dict = json.load(json_file)
-
-        gf_dicts = []
-        for k, v in uuid_dict.items():
-            file_info = {
-                'uuid': v['did'],
-                'file_size': v['size'],
-                'md5sum': v['hashes']['md5'],
-                'file_url': v['urls'][0],
-                'data_type': 'submitted aligned reads',
-                'file_format': get_ext(v['urls'][0]),
-                'file_name': os.path.basename(v['urls'][0])
-            }
-            gf_dicts.append(file_info)
-
-        gf_df = pd.DataFrame(gf_dicts)
 
         genomic_file_df = pd.merge(df, gf_df, on='file_name')
 

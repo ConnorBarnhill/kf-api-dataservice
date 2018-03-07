@@ -3,16 +3,16 @@ import pandas as pd
 
 from dataservice.util.data_import.utils import (
     reformat_column_names,
-    dropna_rows_cols,
-    read_json
+    dropna_rows_cols
 )
+from dataservice.util.data_import.etl.extract import BaseExtractor
 
 DATA_DIR = '/Users/singhn4/Projects/kids_first/data/Rios_Wise_2016'
 DBGAP_DIR = os.path.join(DATA_DIR, 'dbgap')
 MANIFESTS_DIR = os.path.join(DATA_DIR, 'manifests')
 
 
-class Extractor(object):
+class Extractor(BaseExtractor):
 
     @reformat_column_names
     @dropna_rows_cols
@@ -214,34 +214,15 @@ class Extractor(object):
                                  'sample_description', 'seq_exp_id']]
 
         # Genomic file info
-        uuid_dict = read_json(os.path.join(DATA_DIR,
-                                           'genomic_files_by_uuid.json'))
-        gf_df = pd.DataFrame(list(uuid_dict.values()))
-        gf_df['library'] = gf_df['urls'].apply(
-            lambda urls: os.path.dirname(urls[0]).split('/')[-1])
+        filepath = os.path.join(DATA_DIR, 'genomic_files_by_uuid.json')
+        gf_df = super(Extractor, self).read_genomic_files_info(filepath)
+
+        # Add library
+        gf_df['library'] = gf_df['file_url'].apply(
+            lambda file_url: os.path.dirname(file_url).split('/')[-1])
 
         # Merge
         df = pd.merge(seq_exp_df, gf_df, on='library')
-
-        # Reformat
-        df['md5sum'] = df['hashes'].apply(lambda x: x['md5'])
-        df['file_url'] = df['urls'].apply(lambda x: x[0])
-        df['file_format'] = df['file_name'].apply(
-            lambda x: '.'.join(x.split('.')[1:]))
-        df.rename(columns={'did': 'uuid', 'size': 'file_size'}, inplace=True)
-
-        def func(x):
-            x = x.strip()
-            if x == 'bam':
-                val = 'submitted aligned reads'
-            elif 'fastq' in x:
-                val = 'submitted reads'
-            elif 'vcf' in x:
-                val = 'variant calling'
-            else:
-                val = None
-            return val
-        df['data_type'] = df['file_format'].apply(func)
 
         return df
 

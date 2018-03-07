@@ -1,22 +1,19 @@
 import os
-import json
 import pandas as pd
 from numpy import NaN
 
 from dataservice.util.data_import.utils import (
-    read_json,
-    write_json,
-    cols_to_lower,
     dropna_rows_cols,
     reformat_column_names
 )
+from dataservice.util.data_import.etl.extract import BaseExtractor
 
 DATA_DIR = '/Users/singhn4/Projects/kids_first/data/Chung'
 DBGAP_DIR = os.path.join(DATA_DIR, 'dbgap')
 MANIFESTS_DIR = os.path.join(DATA_DIR, 'manifests')
 
 
-class Extractor(object):
+class Extractor(BaseExtractor):
 
     @reformat_column_names
     @dropna_rows_cols
@@ -297,29 +294,8 @@ class Extractor(object):
         """
         if not filepath:
             filepath = os.path.join(DATA_DIR, 'genomic_files_by_uuid.json')
-        data = read_json(filepath)
-        df = pd.DataFrame(list(data.values()))
+        df = super(Extractor, self).read_genomic_files_info(filepath)
 
-        # Reformat
-        df['md5sum'] = df['hashes'].apply(lambda x: x['md5'])
-        df['file_url'] = df['urls'].apply(lambda x: x[0])
-        df['file_format'] = df['file_name'].apply(
-            lambda x: '.'.join(x.split('.')[1:]))
-        df.rename(columns={'did': 'uuid', 'size': 'file_size'}, inplace=True)
-
-        # Data type
-        def func(x):
-            x = x.strip()
-            if x == 'cram':
-                val = 'submitted aligned reads'
-            elif x.endswith('crai'):
-                val = 'submitted aligned reads index'
-            elif 'vcf' in x:
-                val = 'variant calling'
-            else:
-                val = None
-            return val
-        df['data_type'] = df['file_format'].apply(func)
         df['subject_id'] = df['file_name'].apply(
             lambda file_name: file_name.split('.')[0])
         return df
