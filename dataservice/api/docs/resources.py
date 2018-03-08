@@ -2,7 +2,12 @@ import os
 import glob
 import subprocess
 from flask.views import View
-from flask import jsonify, current_app, render_template
+from flask import jsonify, current_app, render_template, send_file
+
+
+class Logo(View):
+    def dispatch_request(self):
+        return send_file('../docs/dataservice.png')
 
 
 class Documentation(View):
