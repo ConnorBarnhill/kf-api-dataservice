@@ -2,6 +2,37 @@ import json
 import time
 import yaml
 from pandas import notnull
+from pathlib import Path
+
+ARCHIVE_COMPRESSION_FORMATS = \
+    {'.7z', '.??_', '.?Q?', '.?XF', '.?Z?', '.F', '.LBR', '.Z', '.a', '.ace',
+     '.afa', '.alz', '.apk', '.ar', '.arc', '.arj', '.b1', '.b6z', '.ba',
+     '.bh', '.bz2', '.cab', '.car', '.cfs', '.cpio', '.cpt', '.dar', '.dd',
+     '.dgc', '.dmg', '.ear', '.gca', '.gz', '.ha', '.hki', '.ice', '.iso',
+     '.jar', '.kgb', '.lbr', '.lha', '.lz', '.lzh', '.lzma', '.lzo', '.lzx',
+     '.mar', '.pak', '.paq6', '.paq7', '.paq8', '.partimg', '.pea', '.pim',
+     '.pit', '.qda', '.rar', '.rk', '.rz', '.s7z', '.sbx', '.sda', '.sea',
+     '.sen', '.sfark', '.sfx', '.shar', '.shk', '.sit', '.sitx', '.sqx',
+     '.sz', '.tar', '.tar.Z', '.tar.bz2', '.tar.gz', '.tar.lzma', '.tar.xz',
+     '.tbz2', '.tgz', '.tlz', '.txz', '.uc', '.uc0', '.uc2', '.uca', '.ucn',
+     '.ue2', '.uha', '.ur2', '.war', '.wim', '.xar', '.xp3', '.xz', '.yz1',
+     '.z', '.zip', '.zipx', '.zoo', '.zpaq', '.zz'}
+
+
+def extract_uncompressed_file_ext(filepath,
+                                  ext_list=ARCHIVE_COMPRESSION_FORMATS):
+    """
+    Extract the file ext of a filepath with compression/archive extensions
+
+    Example - myfile.ppt.tar.gz will result in the extension ppt
+    """
+    exts = Path(filepath).suffixes
+    for ext in reversed(exts):
+        if ext in ext_list:
+            filepath = filepath.rstrip(ext)
+        else:
+            break
+    return filepath.split('.')[-1]
 
 
 def dropna_rows_cols(df_func):
