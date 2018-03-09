@@ -3,6 +3,7 @@ from importlib import import_module
 from pprint import pprint
 
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.exc import NoResultFound
 
 from dataservice.extensions import db
 from dataservice import create_app
@@ -28,13 +29,37 @@ class BaseLoader(object):
         self.app_context.push()
         db.create_all()
 
-    def drop_all(self):
+    def teardown(self):
         """
-        Drop all tables in database
+        Clean up
         """
         db.session.remove()
-        db.drop_all()
         self.app_context.pop()
+
+    def drop_all(self, study_external_id):
+        """
+        Delete all data related to a study
+        """
+        from dataservice.api.study.models import Study
+        from dataservice.api.investigator.models import Investigator
+
+        try:
+            study = Study.query.filter_by(external_id=study_external_id).one()
+        except NoResultFound:
+            print("Study {} not found. Aborting drop all for this dataset"
+                  .format(study_external_id))
+        else:
+            # Save investigator id
+            investigator_id = study.investigator_id
+
+            # Delete study
+            db.session.delete(study)
+
+            # Delete investigator
+            investigator = Investigator.query.get(investigator_id)
+            db.session.delete(investigator)
+
+            db.session.commit()
 
     def run(self, entity_dict, **kwargs):
         """
