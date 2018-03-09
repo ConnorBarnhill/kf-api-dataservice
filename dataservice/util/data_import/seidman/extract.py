@@ -159,13 +159,15 @@ class Extractor(BaseExtractor):
     @dropna_rows_cols
     def read_demographic_data(self, filepaths=None):
         """
-        Read demographic data for all participants (child, mother, father)
+        Read demographic data for all subjects (child, mother, father)
         """
         if not filepaths:
             filenames = [
                 '3a_dbGaP_SubjectPhenotypes_DemographicsDS.txt',
-                '3a_dbGaP_SubjectPhenotypes_MaternalDemographicsDS.txt',
-                '3a_dbGaP_SubjectPhenotypes_PaternalDemographicsDS.txt']
+                '3a_dbGaP_SubjectPhenotypes_MaternalDemographicsDS'
+                '-fixed-03-09-2018.txt',
+                '3a_dbGaP_SubjectPhenotypes_PaternalDemographicsDS'
+                '-fixed-03-09-2018.txt']
 
             filepaths = [os.path.join(DBGAP_DIR, filename)
                          for filename in filenames
@@ -183,23 +185,16 @@ class Extractor(BaseExtractor):
                                      delimiter='\t',
                                      dtype={'SUBJID': str})
 
-        # Combine demographics of all participants
-        participant_demo_df = pd.concat(
+        # Combine demographics of all subjects
+        subject_demo_df = pd.concat(
             [child_demo_df, mother_demo_df, father_demo_df])
 
-        participant_demo_df.drop_duplicates('SUBJID', inplace=True)
+        subject_demo_df.drop_duplicates('SUBJID', inplace=True)
 
         # Subset of columns
-        participant_demo_df = participant_demo_df[['RACE',
-                                                   'ETHNICITY',
-                                                   'SUBJID']]
+        subject_demo_df = subject_demo_df[['RACE', 'ETHNICITY', 'SUBJID']]
 
-        # Add unique id col (needed for transformation + loading)
-        def func(row): return "_".join(['demographic', str(row.name)])
-        participant_demo_df['demographic_id'] = participant_demo_df.apply(
-            func, axis=1)
-
-        return participant_demo_df
+        return subject_demo_df
 
     @reformat_column_names
     @dropna_rows_cols
