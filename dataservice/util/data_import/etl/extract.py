@@ -1,7 +1,10 @@
 from os.path import basename
 import pandas as pd
 
-from dataservice.util.data_import.utils import read_json
+from dataservice.util.data_import.utils import (
+    read_json,
+    extract_uncompressed_file_ext
+)
 
 
 class BaseExtractor(object):
@@ -19,7 +22,8 @@ class BaseExtractor(object):
         df['file_url'] = df['urls'].apply(lambda x: x[0])
         df['file_name'] = df['file_url'].apply(
             lambda file_url: basename(file_url))
-        df['file_format'] = df['file_name'].apply(lambda x: x.split('.')[-1])
+        df['file_format'] = df['file_name'].apply(
+            extract_uncompressed_file_ext)
         df.rename(columns={'did': 'uuid', 'size': 'file_size'}, inplace=True)
 
         # Data type
