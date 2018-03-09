@@ -81,7 +81,7 @@ mappings_dict = {
                 'source_fk_col': {COL_NAME: "subjid"}
             }
         },
-        "_unique_id_col": {COL_VALUE: "demographic_id"}
+        "_unique_id_col": {COL_VALUE: "subjid"}
     },
     "diagnosis": {
         "age_at_event_days": None,
