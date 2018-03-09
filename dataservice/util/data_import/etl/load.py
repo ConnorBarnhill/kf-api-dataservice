@@ -56,8 +56,9 @@ class BaseLoader(object):
             db.session.delete(study)
 
             # Delete investigator
-            investigator = Investigator.query.get(investigator_id)
-            db.session.delete(investigator)
+            if investigator_id:
+                investigator = Investigator.query.get(investigator_id)
+                db.session.delete(investigator)
 
             db.session.commit()
 
