@@ -1,26 +1,25 @@
-from pprint import pprint
-
 from dataservice.util.data_import.chung.extract import Extractor
 from dataservice.util.data_import.chung.transform import Transformer
 from dataservice.util.data_import.chung.load import Loader
+from dataservice.util.data_import.etl import etl
+
+STUDY_EXT_ID = 'phs001110'
+
+ex = Extractor()
+tm = Transformer()
+ld = Loader()
 
 
 def run():
+    """
+    Run extract, transfrom, load modules for a particular dataset
+    """
+    etl.run(ex, tm, ld)
 
-    # Extract and combine data
-    print('Begin extraction ...')
-    e = Extractor()
-    df_dict = e.run()
-    print('Completed extraction\n')
 
-    # Transform from dataframe to dicts
-    print('Begin transformation ...')
-    t = Transformer()
-    content = t.run(df_dict)
-    print('Completed transformation\n')
-
-    # Load into db via sqlalchemy
-    print('Begin loading ...')
-    l = Loader()
-    l.run(content)
-    print('Completed loading\n')
+def drop_data(study_external_id=STUDY_EXT_ID):
+    """
+    Delete all data associated with a study identified by the study's
+    external_id
+    """
+    etl.drop_data(ld, study_external_id)
