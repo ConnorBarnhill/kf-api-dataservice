@@ -1,6 +1,62 @@
-Primary API for interacting with the Kid's First Data Model.
+<center>
+![Kids First](/logo)
+</center>
+
+Welcome to the developer documentation for the Kids First Dataservice API!
+
+The dataservice is the primary hub for retrieval and creation of Kids First
+data. It exposes functionality using a familiar REST interface over HTTP
+requests.
+
+# Connect to the API
+
+The API is currently only available internally inside the Kids First cloud
+environments.
+
+## curl
+
+Curl is the quickest way to communicate with the api from a unix shell
+
+```bash
+curl -H "Content-Type: application/json" http://kf-api-dataservice-qa.kids-first.io/status
+```
+
+To give input to the API:
+```bash
+curl -H "Content-Type: application/json" http://kf-api-dataservice-qa.kids-first.io/status -d '{ "external_id": "my identifier" }'
+```
+
+## Python
+
+We suggest using the popular `requests` package to interact with the API.
+
+```python
+import requests
+
+resp = requests.get('http://kf-api-dataservice-qa.kids-first.io/status',
+                    headers={'Content-Type': 'application/json'})
+
+print(resp.json())
+```
+
+To give input to the API:
+```python
+import requests
+
+body = {
+  "external_id": "my identifier"
+}
+
+resp = requests.post('http://kf-api-dataservice-qa.kids-first.io/participants',
+                     headers={'Content-Type': 'application/json'},
+                     json=body)
+
+print(resp.json())
+```
+
 
 # Identifiers
+
 
 The Kids First dataservice assigns an id to each entity stored in it's
 internal model upon entry into the service. This id, or `kf_id`, is the primary
@@ -23,7 +79,7 @@ The dataservice uses the timestamp of the time of the object's creation
 to paginate. Specific dates may also be used. For example:
 
 ```
-"/participants?after=01-12-2017",
+"/participants?after=01-12-2017"
 ```
 Will list all participants created after December 1st, 2017.
 

@@ -40,6 +40,8 @@ class Swagger(View):
         with open('dataservice/api/README.md') as f:
             self.spec['info']['description'] = f.read()
 
+        self.spec['info']['x-logo'] = {'url': '/logo'}
+
         tags = []
         for d in glob.glob('dataservice/api/*/README.md'):
             name = d.split('/')[-2].capitalize()
