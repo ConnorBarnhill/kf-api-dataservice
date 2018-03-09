@@ -109,16 +109,18 @@ class Extractor(BaseExtractor):
         """
         Extract diagnosis df from all data df
         """
-        # Create diagnosis df
-        df.loc[(df['morphology'] == "9260/3: Ewing's"
-                "sarcoma\r\nEwing's tumor"),
-               'morphology'] = 'Ewing Sarcoma'
+        # Handle NaN
+        df = df.where((pd.notnull(df)), None)
+
+        # Remove carriage returns and new lines from diagnosis
+        def func(diagnosis):
+            if diagnosis:
+                diagnosis = ' '.join(diagnosis.splitlines())
+            return diagnosis
+        df['morphology'] = df['morphology'].apply(func)
 
         # Extract columns needed
         df = df[['individual_name', 'age_at_diagnosis_(days)', 'morphology']]
-
-        # Handle NaN
-        df = df.where((pd.notnull(df)), None)
 
         return df
 
