@@ -130,7 +130,9 @@ class Extractor(BaseExtractor):
         """
         diagnosis_df['phenotype'] = "Ewing's Sarcoma"
         diagnosis_df['hpo_id'] = "HP:0012254"
-        diagnosis_df['observed'] = "positive"
+        _map = {True: 'positive', False: 'negative'}
+        diagnosis_df['observed'] = (pd.notnull(diagnosis_df['morphology']).
+                                    apply(lambda has_morph: _map[has_morph]))
 
         return diagnosis_df
 
