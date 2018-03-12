@@ -135,4 +135,5 @@ def read_json(filepath):
 
 def write_json(data, filepath):
     with open(filepath, 'w') as json_file:
-        json.dump(data, json_file, sort_keys=True, indent=4, separators=(',', ':'))
+        json.dump(data, json_file, sort_keys=True, indent=4,
+                  separators=(',', ':'))
