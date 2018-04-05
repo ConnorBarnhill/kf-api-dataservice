@@ -27,7 +27,7 @@ pipeline {
         sh '''
         git clone git@github.com:kids-first/aws-ecs-service-type-1.git
         cd aws-ecs-service-type-1
-        git checkout feature/adding-jenkins-docker
+        git checkout feature/adding-autoscaling
         '''
       }
     }
