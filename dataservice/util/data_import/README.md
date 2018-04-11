@@ -16,6 +16,11 @@ in the Kids First Dataservice. At a minimum you should have Postgres running (lo
 The Postgres server has a database called `dev` with the Kids First Dataservice entity tables.
 Additionally, you have the `FLASK_APP` environment variable set to `manage.py`.
 
+Install the necessary data import tool dependencies:
+```
+pip install -r ./requirements.txt
+```
+
 ## Import Data
 The data importer uses flask commands as the main interface for running data imports and
 deleting data.
