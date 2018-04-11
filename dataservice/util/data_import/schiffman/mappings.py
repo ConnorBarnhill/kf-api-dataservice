@@ -64,7 +64,12 @@ mappings_dict = {
     "participant": {
         "external_id": {COL_NAME: "individual_name"},
         "is_proband": {COL_NAME: "relationship_to_proband"},
-        "family_id": {COL_NAME: "family_id"},
+        # "family_id": {COL_NAME: "family_id"},
+        "ethnicity": "unknown",
+        "gender": {COL_NAME: "gender",
+                   COL_VALUE: {"Female": "female",
+                               "Male": "male"}},
+        "race": "unknown",
         "_unique_id_col": {COL_VALUE: "individual_name"},
         "_links": {
             'study': {
@@ -84,20 +89,6 @@ mappings_dict = {
         "phenotype": {COL_NAME: "phenotype"},
         "hpo_id": {COL_NAME: "hpo_id"},
         "observed": {COL_NAME: "observed"},
-        "_links": {
-            'participant': {
-                'target_fk_col': {COL_VALUE: 'participant_id'},
-                'source_fk_col': {COL_NAME: "individual_name"}
-            }
-        },
-        "_unique_id_col": {COL_VALUE: "individual_name"}
-    },
-    "demographic": {
-        "ethnicity": "unknown",
-        "gender": {COL_NAME: "gender",
-                   COL_VALUE: {"Female": "female",
-                               "Male": "male"}},
-        "race": "unknown",
         "_links": {
             'participant': {
                 'target_fk_col': {COL_VALUE: 'participant_id'},
