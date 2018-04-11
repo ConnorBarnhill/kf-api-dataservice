@@ -72,7 +72,7 @@ class Extractor(BaseExtractor):
         cols_to_lower(df)
         # Extract participant columns
         participant_df = df[['individual_name', 'ewing_trio_number',
-                             'relationship_to_proband']]
+                             'relationship_to_proband', 'gender']]
 
         # Create is_proband col
         def func(row): return row.relationship_to_proband == 'Self/Case'
