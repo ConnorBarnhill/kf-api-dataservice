@@ -408,7 +408,7 @@ class Extractor(BaseExtractor):
         self._add_study_cols(study_df, full_participant_df)
 
         # Add study to basic participant df
-        participant_df = self._add_study_cols(study_df, family_df)
+        participant_df = self._add_study_cols(study_df, demographic_df)
 
         # Add study to investigator df
         study_investigator_df = self._add_study_cols(study_df, investigator_df)
@@ -436,7 +436,6 @@ class Extractor(BaseExtractor):
             'investigator': investigator_df,
             'participant': participant_df,
             'family_relationship': family_df,
-            'demographic': demographic_df,
             'diagnosis': diagnosis_df,
             'phenotype': phenotype_participant_df,
             'genomic_file': genomic_file_df,
