@@ -1,7 +1,7 @@
-Kids First Data Utility
-=========================
+Kids First Data Import Utility
+==============================
 
-The Kids First Data Utility is currently a simple tool, used internally, to ETL raw Kids First data into the Kids First Data Service. This tool is currently a utility that is part of the
+The Kids First Data Import Utility is currently a simple tool, used internally, to ETL raw Kids First data into the Kids First Data Service. This tool is currently a utility that is part of the
 Kids First Data Service API, however, in the near future it will be extracted from here
 and made part of a Kids First data import or ETL service.
 
