@@ -294,7 +294,6 @@ class Extractor(BaseExtractor):
             'study_file': study_study_files_df,
             'investigator': investigator_df,
             'participant': participant_df,
-            'demographic': participant_df,
             'diagnosis': diagnosis_df,
             'phenotype': phenotype_df1,
             'sample': sample_df,
