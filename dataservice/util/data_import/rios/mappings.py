@@ -37,8 +37,15 @@ mappings_dict = {
         "external_id": {COL_NAME: "subject_id"},
         "is_proband": {COL_NAME: "proband"},
         "consent_type": {COL_NAME: "consent"},
-        "family_id": {COL_NAME: "family_id"},
+        # "family_id": {COL_NAME: "family_id"},
         "_unique_id_col": {COL_VALUE: "subject_id"},
+        "ethnicity": {COL_NAME: "ethnicity",
+                      COL_VALUE: {"Yes": "hispanic or latino",
+                                  "No": "not hispanic or latino"}},
+
+        "gender": {COL_NAME: "sex"},
+        "race": {COL_NAME: "race",
+                 COL_VALUE: {"More than one race": "other"}},
         "_links": {
             'study': {
                 'target_fk_col': {COL_VALUE: 'study_id'},
@@ -57,22 +64,6 @@ mappings_dict = {
         "phenotype": {COL_NAME: "phenotype"},
         "hpo_id": {COL_NAME: "hpo_id"},
         "observed": {COL_NAME: "observed"},
-        "_links": {
-            'participant': {
-                'target_fk_col': {COL_VALUE: 'participant_id'},
-                'source_fk_col': {COL_NAME: "subject_id"}
-            }
-        },
-        "_unique_id_col": {COL_VALUE: "subject_id"}
-    },
-    "demographic": {
-        "ethnicity": {COL_NAME: "ethnicity",
-                      COL_VALUE: {"Yes": "hispanic or latino",
-                                  "No": "not hispanic or latino"}},
-
-        "gender": {COL_NAME: "sex"},
-        "race": {COL_NAME: "race",
-                 COL_VALUE: {"More than one race": "other"}},
         "_links": {
             'participant': {
                 'target_fk_col': {COL_VALUE: 'participant_id'},
