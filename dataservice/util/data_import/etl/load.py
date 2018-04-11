@@ -43,13 +43,8 @@ class BaseLoader(object):
         from dataservice.api.study.models import Study
         from dataservice.api.investigator.models import Investigator
 
-        try:
-            study = Study.query.filter_by(external_id=study_external_id).one()
-        except NoResultFound:
-            print("Study {} not found. Aborting drop all for this dataset"
-                  .format(study_external_id))
-        else:
-            # Save investigator id
+        studies = Study.query.filter_by(external_id=study_external_id).all()
+        for study in studies:
             investigator_id = study.investigator_id
 
             # Delete study
@@ -60,7 +55,7 @@ class BaseLoader(object):
                 investigator = Investigator.query.get(investigator_id)
                 db.session.delete(investigator)
 
-            db.session.commit()
+        db.session.commit()
 
     def run(self, entity_dict, **kwargs):
         """
