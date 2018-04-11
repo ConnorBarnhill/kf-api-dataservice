@@ -361,19 +361,19 @@ class Extractor(BaseExtractor):
         # Participant df
         # Merge subject + subject attributes
         df1 = pd.merge(subject_df, subject_attr_df, on='subject_id')
-        df1.head()
+
         # Merge family
         df2 = pd.merge(df1, family_df, on='subject_id')
         # Merge proband from sample manifests
         participant_df = pd.merge(
             df2,
             sample_manifest_df[['sample_id', 'is_proband']], on='sample_id')
+        # Merge demographics
+        participant_df = pd.merge(demographic_df, participant_df,
+                                  on='subject_id')
+
         # Add study to basic participant df
         participant_df = self._add_study_cols(study_df, participant_df)
-
-        # Demographic df
-        demographic_df = pd.merge(demographic_df, participant_df,
-                                  on='subject_id')
 
         # Sample df
         # Merge with subject data
@@ -409,7 +409,6 @@ class Extractor(BaseExtractor):
             'study_file': study_study_files_df,
             'investigator': investigator_df,
             'participant': participant_df,
-            'demographic': demographic_df,
             'diagnosis': phenotype_df,
             'phenotype': phenotype_df,
             'outcome': outcome_df,
