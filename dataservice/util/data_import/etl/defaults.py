@@ -3,7 +3,6 @@ DEFAULT_ENTITY_TYPES = [
     'study',
     'study_file',
     'participant',
-    'demographic',
     'diagnosis',
     'sample',
     'aliquot',
