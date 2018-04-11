@@ -36,8 +36,18 @@ mappings_dict = {
     "participant": {
         "external_id": {COL_NAME: "subjid"},
         "is_proband": {COL_NAME: "is_proband"},
-        "family_id": {COL_NAME: "famid"},
+        # "family_id": {COL_NAME: "famid"},
         "_unique_id_col": {COL_VALUE: "subjid"},
+        "ethnicity": {COL_NAME: "ethnicity",
+                      COL_VALUE: {"Yes": "hispanic or latino",
+                                  "No": "not hispanic or latino"}},
+
+        "gender": {COL_NAME: "sex",
+                   COL_VALUE: {"F": "female",
+                               "M": "male"}},
+
+        "race": {COL_NAME: "race",
+                 COL_VALUE: {"More than one race": "other"}},
         "_links": {
             'study': {
                 'target_fk_col': {COL_VALUE: 'study_id'},
@@ -63,25 +73,6 @@ mappings_dict = {
             }
         },
         "_unique_id_col": {COL_VALUE: "phenotype_id"}
-    },
-    "demographic": {
-        "ethnicity": {COL_NAME: "ethnicity",
-                      COL_VALUE: {"Yes": "hispanic or latino",
-                                  "No": "not hispanic or latino"}},
-
-        "gender": {COL_NAME: "sex",
-                   COL_VALUE: {"F": "female",
-                               "M": "male"}},
-
-        "race": {COL_NAME: "race",
-                 COL_VALUE: {"More than one race": "other"}},
-        "_links": {
-            'participant': {
-                'target_fk_col': {COL_VALUE: 'participant_id'},
-                'source_fk_col': {COL_NAME: "subjid"}
-            }
-        },
-        "_unique_id_col": {COL_VALUE: "subjid"}
     },
     "diagnosis": {
         "age_at_event_days": None,
