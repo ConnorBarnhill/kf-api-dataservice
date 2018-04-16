@@ -94,36 +94,27 @@ mappings_dict = {
         },
         "_unique_id_col": {COL_VALUE: "diagnosis_id"}
     },
-    "sample": {
-        "external_id": {COL_NAME: "sample_name"},
+    "biospecimen": {
+        "external_sample_id": {COL_NAME: "sampid"},
+        "external_aliquot_id": {COL_NAME: "barcode"},
+        "tissue_type": {COL_VALUE: "Normal"},
         "composition": {COL_VALUE: "Peripheral Whole Blood"},
+        "anatomical_site": None,
         "age_at_event_days": None,
         "tumor_descriptor": None,
-        "anatomical_site": None,
-        "tissue_type": {COL_VALUE: "Normal"},
+        "shipment_origin": None,
+        "shipment_date": None,
+        "shipment_destination": {COL_VALUE: "Baylor College of Medicine"},
+        "analyte_type": {COL_VALUE: "DNA"},
+        "concentration_mg_per_ml": {COL_NAME: "concentration_ng_per_ul"},
+        "volume_ml": {COL_NAME: "initial_volume_microliters"},
         "_links": {
             'participant': {
                 'target_fk_col': {COL_VALUE: 'participant_id'},
                 'source_fk_col': {COL_NAME: "subjid"}
             }
         },
-        "_unique_id_col": {COL_VALUE: "sample_name"}
-    },
-    "aliquot": {
-        "external_id": {COL_NAME: "barcode"},
-        "analyte_type": {COL_VALUE: "DNA"},
-        "volume": {COL_NAME: "initial_volume_microliters"},
-        "concentration": {COL_NAME: "concentration_ng_per_ul"},
-        "shipment_destination": {COL_VALUE: "Baylor College of Medicine"},
-        "shipment_origin": None,
-        "shipment_date": None,
-        "_links": {
-            'sample': {
-                'target_fk_col': {COL_VALUE: 'sample_id'},
-                'source_fk_col': {COL_NAME: "sample_name"}
-            }
-        },
-        "_unique_id_col": {COL_VALUE: "barcode"}
+        "_unique_id_col": {COL_VALUE: "sampid"}
     },
     "sequencing_experiment": {
         "external_id": {COL_NAME: "rg_barcode"},
