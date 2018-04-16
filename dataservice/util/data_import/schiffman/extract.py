@@ -224,6 +224,7 @@ class Extractor(BaseExtractor):
             'family_relationship': family_df,
             'diagnosis': diagnosis_df,
             'phenotype': phenotype_df,
+            'biospecimen': all_data_df,
             'sequencing_experiment': seq_exp_df,
             'genomic_file': genomic_file_df,
             'default': all_data_df
