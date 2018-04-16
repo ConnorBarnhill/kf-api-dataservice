@@ -92,36 +92,27 @@ mappings_dict = {
         },
         "_unique_id_col": {COL_VALUE: "subject_id"}
     },
-    "sample": {
-        "external_id": {COL_NAME: "sample_id"},
-        "composition": {COL_NAME: "histological_type"},
-        "age_at_event_days": None,
-        "tumor_descriptor": None,
-        "anatomical_site": {COL_NAME: "body_site"},
+    "biospecimen": {
+        "external_sample_id": {COL_NAME: "sample_id"},
+        "external_aliquot_id": None,
         "tissue_type": {COL_NAME: "is_tumor",
                         COL_VALUE: {"Y": "Tumor",
                                     "N": "Normal"}},
+        "composition": {COL_NAME: "histological_type"},
+        "anatomical_site": {COL_NAME: "body_site"},
+        "age_at_event_days": None,
+        "tumor_descriptor": None,
+        "shipment_origin": {COL_NAME: "sample_source"},
+        "shipment_date": None,
+        "shipment_destination": {COL_VALUE: "HudsonAlpha Institute"
+                                 " for Biotechnology"},
+        "analyte_type": {COL_NAME: "analyte_type"},
+        "concentration_mg_per_ml": None,
+        "volume_ml": None,
         "_links": {
             'participant': {
                 'target_fk_col': {COL_VALUE: 'participant_id'},
                 'source_fk_col': {COL_NAME: "subject_id"}
-            }
-        },
-        "_unique_id_col": {COL_VALUE: "sample_id"}
-    },
-    "aliquot": {
-        "external_id": {COL_NAME: "sample_id"},
-        "analyte_type": {COL_NAME: "analyte_type"},
-        "volume": None,
-        "concentration": None,
-        "shipment_destination": {COL_VALUE: "HudsonAlpha Institute"
-                                 " for Biotechnology"},
-        "shipment_origin": {COL_NAME: "sample_source"},
-        "shipment_date": None,
-        "_links": {
-            'sample': {
-                'target_fk_col': {COL_VALUE: 'sample_id'},
-                'source_fk_col': {COL_NAME: "sample_id"}
             }
         },
         "_unique_id_col": {COL_VALUE: "sample_id"}

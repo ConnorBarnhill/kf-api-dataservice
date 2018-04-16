@@ -282,11 +282,11 @@ class Extractor(BaseExtractor):
         # Add study to study files df
         study_study_files_df = self._add_study_cols(study_df, study_files_df)
 
-        # Sample
+        # Biospecimen
         # Merge sample attributes w subject sample
         df1 = pd.merge(sample_attr_df, subject_sample_df, on='sample_id')
         # Merge sample with subject
-        sample_df = pd.merge(df1, subject_df, on='subject_id')
+        biospecimen_df = pd.merge(df1, subject_df, on='subject_id')
 
         # Dict to store dfs for each entity
         entity_dfs = {
@@ -297,8 +297,7 @@ class Extractor(BaseExtractor):
             'participant': participant_df,
             'diagnosis': diagnosis_df,
             'phenotype': phenotype_df1,
-            'sample': sample_df,
-            'aliquot': sample_df,
+            'biospecimen': biospecimen_df,
             'sequencing_experiment': seq_exp_df,
             'family_relationship': family_df,
             'genomic_file': genomic_file_df,
