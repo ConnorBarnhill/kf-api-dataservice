@@ -219,6 +219,7 @@ class Extractor(BaseExtractor):
             'study': study_investigator_df,
             'study_file': study_study_files_df,
             'investigator': investigator_df,
+            'family': participant_df,
             'participant': study_participant_df,
             'family_relationship': family_df,
             'diagnosis': diagnosis_df,
@@ -227,7 +228,6 @@ class Extractor(BaseExtractor):
             'genomic_file': genomic_file_df,
             'default': all_data_df
         }
-
         return entity_dfs
 
     def _add_study_cols(self, study_df, df):

@@ -61,10 +61,13 @@ mappings_dict = {
             }
         }
     },
+    'family': {
+        "external_id": {COL_NAME: "family_id"},
+        "_unique_id_col": {COL_VALUE: "family_id"}
+    },
     "participant": {
         "external_id": {COL_NAME: "individual_name"},
         "is_proband": {COL_NAME: "relationship_to_proband"},
-        # "family_id": {COL_NAME: "family_id"},
         "ethnicity": "unknown",
         "gender": {COL_NAME: "gender",
                    COL_VALUE: {"Female": "female",
@@ -72,6 +75,10 @@ mappings_dict = {
         "race": "unknown",
         "_unique_id_col": {COL_VALUE: "individual_name"},
         "_links": {
+            'family': {
+                'target_fk_col': {COL_VALUE: 'family_id'},
+                'source_fk_col': {COL_NAME: "family_id"}
+            },
             'study': {
                 'target_fk_col': {COL_VALUE: 'study_id'},
                 'source_fk_col': {COL_NAME: "study_id"}
