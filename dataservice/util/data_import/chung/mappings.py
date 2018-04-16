@@ -90,21 +90,6 @@ mappings_dict = {
         },
         "_unique_id_col": {COL_VALUE: "outcome_id"}
     },
-    "demographic": {
-        "ethnicity": {COL_NAME: "ethnicity"},
-        "gender": {COL_NAME: "sex",
-                   COL_VALUE: {"F": "female",
-                               "M": "male"}},
-        "race": {COL_NAME: "race",
-                 COL_VALUE: {"mulitiple_races": "other"}},
-        "_links": {
-            'participant': {
-                'target_fk_col': {COL_VALUE: 'participant_id'},
-                'source_fk_col': {COL_NAME: "subject_id"}
-            }
-        },
-        "_unique_id_col": {COL_VALUE: "subject_id"}
-    },
     "diagnosis": {
         "age_at_event_days": None,
         "diagnosis": {COL_NAME: "phenotype"},
@@ -118,35 +103,26 @@ mappings_dict = {
         },
         "_unique_id_col": {COL_VALUE: "phenotype_id"}
     },
-    "sample": {
-        "external_id": {COL_NAME: "sample_id"},
-        "composition": None,
-        "age_at_event_days": None,
-        "tumor_descriptor": None,
-        "anatomical_site": {COL_NAME: "body_site"},
+    "biospecimen": {
+        "external_sample_id": {COL_NAME: "sample_id"},
+        'external_aliquot_id': None,
         "tissue_type": {COL_NAME: "is_tumor",
                         COL_VALUE: {"Y": "Tumor",
                                     "N": "Normal"}},
+        "composition": None,
+        "anatomical_site": {COL_NAME: "body_site"},
+        "age_at_event_days": None,
+        "tumor_descriptor": None,
+        "shipment_origin": None,
+        "shipment_date": None,
+        "shipment_destination": {COL_VALUE: "Broad Institute"},
+        "analyte_type": {COL_NAME: "analyte_type"},
+        "concentration_mg_per_ml": {COL_NAME: "concentration"},
+        "volume_ml": {COL_NAME: "volume"},
         "_links": {
             'participant': {
                 'target_fk_col': {COL_VALUE: 'participant_id'},
                 'source_fk_col': {COL_NAME: "subject_id"}
-            }
-        },
-        "_unique_id_col": {COL_VALUE: "sample_id"}
-    },
-    "aliquot": {
-        "external_id": {COL_NAME: "sample_id"},
-        "analyte_type": {COL_NAME: "analyte_type"},
-        "volume": {COL_NAME: "volume"},
-        "concentration": {COL_NAME: "concentration"},
-        "shipment_destination": {COL_VALUE: "Broad Institute"},
-        "shipment_origin": None,
-        "shipment_date": None,
-        "_links": {
-            'sample': {
-                'target_fk_col': {COL_VALUE: 'sample_id'},
-                'source_fk_col': {COL_NAME: "sample_id"}
             }
         },
         "_unique_id_col": {COL_VALUE: "sample_id"}
@@ -166,14 +142,7 @@ mappings_dict = {
         "mean_insert_size": {COL_NAME: "mean_insert_size"},
         "mean_depth": {COL_NAME: "mean_depth"},
         "total_reads": {COL_NAME: "total_reads"},
-        "mean_read_length": {COL_NAME: "mean_read_length"},
-        "_links": {
-            'aliquot': {
-                'target_fk_col': {COL_VALUE: 'aliquot_id'},
-                'source_fk_col': {COL_NAME: "sample_id"}
-            }
-        },
-        "_unique_id_col": {COL_VALUE: "seq_exp_id"}
+        "mean_read_length": {COL_NAME: "mean_read_length"}
     },
     "genomic_file": {
         "uuid": {COL_NAME: "uuid"},
