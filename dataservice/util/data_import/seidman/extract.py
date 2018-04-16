@@ -279,6 +279,29 @@ class Extractor(BaseExtractor):
 
     @reformat_column_names
     @dropna_rows_cols
+    def _create_biospecimen_df(self, sample_df, aliquot_df):
+        """
+        Create a biospecimen data frame from sample and aliquot info
+        """
+        from dataservice.util.data_import.utils import (
+            NG_TO_MG,
+            UL_TO_ML
+        )
+        df = pd.merge(sample_df, aliquot_df,
+                      how='left',
+                      left_on='sampid',
+                      right_on='external_id')
+
+        # Convert to standard units
+        df['concentration_ng_per_ul'] = (df['concentration_ng_per_ul']
+                                         * (NG_TO_MG / UL_TO_ML))
+        df['initial_volume_microliters'] = (
+            df['initial_volume_microliters'] * UL_TO_ML)
+
+        return df
+
+    @reformat_column_names
+    @dropna_rows_cols
     def read_seq_experiment_data(self, filepath=None):
         if not filepath:
             filepath = os.path.join(DATA_DIR, "seidman_metadata.xlsx")
@@ -395,12 +418,10 @@ class Extractor(BaseExtractor):
         df3 = pd.merge(family_df, participant_sample_df, on='subjid')
 
         # Merge Aliquot
-        df4 = pd.merge(df3, aliquot_df,
-                       left_on='sampid',
-                       right_on='external_id')
+        biospecimen_df = self._create_biospecimen_df(df3, aliquot_df)
 
         # Merge Sequencing Experiment
-        full_participant_df = pd.merge(df4, seq_exp_df,
+        full_participant_df = pd.merge(biospecimen_df, seq_exp_df,
                                        left_on='external_id',
                                        right_on='sample_name')
 
@@ -439,6 +460,7 @@ class Extractor(BaseExtractor):
             'family_relationship': family_df,
             'diagnosis': diagnosis_df,
             'phenotype': phenotype_participant_df,
+            'biospecimen': biospecimen_df,
             'genomic_file': genomic_file_df,
             'default': full_participant_df
         }

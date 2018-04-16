@@ -18,6 +18,9 @@ ARCHIVE_COMPRESSION_FORMATS = \
      '.ue2', '.uha', '.ur2', '.war', '.wim', '.xar', '.xp3', '.xz', '.yz1',
      '.z', '.zip', '.zipx', '.zoo', '.zpaq', '.zz'}
 
+NG_TO_MG = 10**-6
+UL_TO_ML = 0.001
+
 
 def extract_uncompressed_file_ext(filepath,
                                   ext_list=ARCHIVE_COMPRESSION_FORMATS):
