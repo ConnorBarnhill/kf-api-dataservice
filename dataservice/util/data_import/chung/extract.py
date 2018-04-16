@@ -274,6 +274,23 @@ class Extractor(BaseExtractor):
 
     @reformat_column_names
     @dropna_rows_cols
+    def _create_biospecimen_df(self, sample_df, sample_manifest_df):
+        """
+        Create a biospecimen data frame from sample and manifest info
+        """
+        df = pd.merge(sample_df, sample_manifest_df, on='sample_id')
+        from dataservice.util.data_import.utils import (
+            NG_TO_MG,
+            UL_TO_ML
+        )
+        # Convert to standard units
+        df['concentration'] = df['concentration'] * (NG_TO_MG / UL_TO_ML)
+        df['volume'] = df['volume'] * UL_TO_ML
+
+        return df
+
+    @reformat_column_names
+    @dropna_rows_cols
     def read_genomic_file_manifest(self, filepath=None):
         """
         Read genomic file manifest (ties subjects to genomic files)
@@ -380,10 +397,10 @@ class Extractor(BaseExtractor):
         df3 = pd.merge(participant_df, subject_sample_df[[
                        'subject_id', 'sample_use']], on='subject_id')
         # Merge with sample manifests
-        sample_df = pd.merge(df3, sample_manifest_df, on='sample_id')
+        biospecimen_df = self._create_biospecimen_df(df3, sample_manifest_df)
 
         # Sequencing experiment df
-        seq_exp_df = self.create_seq_exp_df(sample_df, gf_manifest_df)
+        seq_exp_df = self.create_seq_exp_df(biospecimen_df, gf_manifest_df)
 
         # Genomic file df
         genomic_file_df = pd.merge(gf_file_info_df, seq_exp_df,
@@ -413,8 +430,7 @@ class Extractor(BaseExtractor):
             'diagnosis': phenotype_df,
             'phenotype': phenotype_df,
             'outcome': outcome_df,
-            'sample': sample_df,
-            'aliquot': sample_df,
+            'biospecimen': biospecimen_df,
             'sequencing_experiment': seq_exp_df,
             'genomic_file': genomic_file_df,
             'default': participant_df
