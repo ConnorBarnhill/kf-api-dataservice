@@ -33,11 +33,14 @@ mappings_dict = {
             }
         }
     },
+    'family': {
+        "external_id": {COL_NAME: "family_id"},
+        "_unique_id_col": {COL_VALUE: "family_id"}
+    },
     "participant": {
         "external_id": {COL_NAME: "subject_id"},
         "is_proband": {COL_NAME: "is_proband"},
         "consent_type": {COL_NAME: "consent"},
-        # "family_id": {COL_NAME: "family_id"},
         "ethnicity": {COL_NAME: "ethnicity"},
         "gender": {COL_NAME: "sex",
                    COL_VALUE: {"F": "female",
@@ -46,6 +49,10 @@ mappings_dict = {
                  COL_VALUE: {"mulitiple_races": "other"}},
         "_unique_id_col": {COL_VALUE: "subject_id"},
         "_links": {
+            'family': {
+                'target_fk_col': {COL_VALUE: 'family_id'},
+                'source_fk_col': {COL_NAME: "family_id"}
+            },
             'study': {
                 'target_fk_col': {COL_VALUE: 'study_id'},
                 'source_fk_col': {COL_NAME: "study_id"}
