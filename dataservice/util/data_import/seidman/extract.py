@@ -434,6 +434,7 @@ class Extractor(BaseExtractor):
             'study': study_investigator_df,
             'study_file': study_study_files_df,
             'investigator': investigator_df,
+            'family': family_df,
             'participant': participant_df,
             'family_relationship': family_df,
             'diagnosis': diagnosis_df,

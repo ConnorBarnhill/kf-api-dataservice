@@ -33,10 +33,13 @@ mappings_dict = {
             }
         }
     },
+    'family': {
+        "external_id": {COL_NAME: "famid"},
+        "_unique_id_col": {COL_VALUE: "famid"}
+    },
     "participant": {
         "external_id": {COL_NAME: "subjid"},
         "is_proband": {COL_NAME: "is_proband"},
-        # "family_id": {COL_NAME: "famid"},
         "_unique_id_col": {COL_VALUE: "subjid"},
         "ethnicity": {COL_NAME: "ethnicity",
                       COL_VALUE: {"Yes": "hispanic or latino",
@@ -49,6 +52,10 @@ mappings_dict = {
         "race": {COL_NAME: "race",
                  COL_VALUE: {"More than one race": "other"}},
         "_links": {
+            'family': {
+                'target_fk_col': {COL_VALUE: 'family_id'},
+                'source_fk_col': {COL_NAME: "famid"}
+            },
             'study': {
                 'target_fk_col': {COL_VALUE: 'study_id'},
                 'source_fk_col': {COL_NAME: "study_id"}
@@ -133,12 +140,6 @@ mappings_dict = {
         "mean_depth": None,
         "total_reads": None,
         "mean_read_length": {COL_NAME: "mean_read_length"},
-        "_links": {
-            'aliquot': {
-                'target_fk_col': {COL_VALUE: 'aliquot_id'},
-                'source_fk_col': {COL_NAME: "barcode"}
-            }
-        },
         "_unique_id_col": {COL_VALUE: "rg_barcode"}
     },
     "genomic_file": {
