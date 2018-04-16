@@ -117,33 +117,24 @@ mappings_dict = {
         },
         "_unique_id_col": {COL_VALUE: "individual_name"}
     },
-    "sample": {
-        "external_id": {COL_NAME: "sample_name"},
+    "biospecimen": {
+        "external_sample_id": {COL_NAME: "sample_name"},
+        "external_aliquot_id": None,
+        "tissue_type": None,
         "composition": {COL_NAME: "sample_type"},
+        "anatomical_site": {COL_NAME: "topography"},
         "age_at_event_days": None,
         "tumor_descriptor": None,
-        "anatomical_site": {COL_NAME: "topography"},
-        "tissue_type": None,
+        "shipment_origin": None,
+        "shipment_date": None,
+        "shipment_destination": {COL_VALUE: "Washington University"},
+        "analyte_type": {COL_VALUE: "DNA"},
+        "concentration_mg_per_ml": None,
+        "volume_ml": None,
         "_links": {
             'participant': {
                 'target_fk_col': {COL_VALUE: 'participant_id'},
                 'source_fk_col': {COL_NAME: "individual_name"}
-            }
-        },
-        "_unique_id_col": {COL_VALUE: "sample_name"}
-    },
-    "aliquot": {
-        "external_id": {COL_NAME: "sample_name"},
-        "analyte_type": {COL_VALUE: "DNA"},
-        "volume": None,
-        "concentration": None,
-        "shipment_destination": {COL_VALUE: "Washington University"},
-        "shipment_origin": None,
-        "shipment_date": None,
-        "_links": {
-            'sample': {
-                'target_fk_col': {COL_VALUE: 'sample_id'},
-                'source_fk_col': {COL_NAME: "sample_name"}
             }
         },
         "_unique_id_col": {COL_VALUE: "sample_name"}
@@ -163,12 +154,6 @@ mappings_dict = {
         "mean_depth": None,
         "total_reads": {COL_NAME: "pf_reads"},
         "mean_read_length": None,
-        "_links": {
-            'aliquot': {
-                'target_fk_col': {COL_VALUE: 'aliquot_id'},
-                'source_fk_col': {COL_NAME: "phenotype_sheet_sample_name"}
-            }
-        },
         "_unique_id_col": {COL_VALUE: "build_id"}
     },
     "genomic_file": {
