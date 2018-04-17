@@ -3,7 +3,6 @@ from importlib import import_module
 from pprint import pprint
 
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm.exc import NoResultFound
 
 from dataservice.extensions import db
 from dataservice import create_app
