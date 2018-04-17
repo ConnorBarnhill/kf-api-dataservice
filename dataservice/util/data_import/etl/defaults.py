@@ -8,7 +8,7 @@ DEFAULT_ENTITY_TYPES = [
     'phenotype',
     'outcome',
     'biospecimen',
-    # 'sequencing_experiment',
-    # # 'genomic_file',
+    'sequencing_experiment',
+    'genomic_file',
     'family_relationship'
 ]
