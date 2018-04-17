@@ -156,18 +156,32 @@ class Extractor(BaseExtractor):
                  'phenotype_sheet_sample_name']]
         return df
 
-    def create_genomic_file_df(self, df):
-        """
-        Create genomic file df
-        """
+    def create_genomic_file_df(self, genomic_df, biospecimen_df):
         filepath = os.path.join(DATA_DIR, 'genomic_file_uuid.json')
-        gf_df = super(Extractor, self).read_genomic_files_info(filepath)
+        gf_info_df = super(Extractor, self).read_genomic_files_info(filepath)
+        genomic_df = genomic_df[['build_id',
+                                 'phenotype_sheet_sample_name',
+                                 'bam_path']]
+        genomic_df['file_name'] = genomic_df['bam_path'].apply(
+            lambda p: os.path.basename(p))
 
-        df = df[['build_id', 'bam_path']]
-        df['file_name'] = df['bam_path'].apply(lambda p: os.path.basename(p))
-
-        genomic_file_df = pd.merge(df, gf_df, on='file_name')
-
+        # Merge sequencing experiment data
+        df1 = pd.merge(genomic_df, gf_info_df, on='file_name')
+        # Merge biospecimen data
+        genomic_file_df = pd.merge(df1, biospecimen_df,
+                                   left_on='phenotype_sheet_sample_name',
+                                   right_on='sample_name')
+        genomic_file_df = genomic_file_df[['build_id',
+                                           'sample_name',
+                                           'file_name',
+                                           'file_format',
+                                           'uuid',
+                                           'form',
+                                           'hashes',
+                                           'file_size',
+                                           'file_url',
+                                           'data_type',
+                                           'md5sum']]
         return genomic_file_df
 
     def build_dfs(self):
@@ -203,7 +217,7 @@ class Extractor(BaseExtractor):
         seq_exp_df = self.create_seq_exp_data(genomic_df)
 
         # Genomic File
-        genomic_file_df = self.create_genomic_file_df(genomic_df)
+        genomic_file_df = self.create_genomic_file_df(genomic_df, all_data_df)
 
         # Add study to investigator df
         study_investigator_df = self._add_study_cols(study_df, investigator_df)
