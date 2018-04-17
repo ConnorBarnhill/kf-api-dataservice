@@ -118,10 +118,9 @@ mappings_dict = {
         "_unique_id_col": {COL_VALUE: "sample_id"}
     },
     "sequencing_experiment": {
-        "external_id": {COL_NAME: "sample_description"},
+        "external_id": {COL_NAME: "seq_exp_id"},
         "experiment_date": None,
-        "experiment_strategy": {COL_NAME: "sample_use",
-                                COL_VALUE: {"Seq_DNA_WholeGenome": "WGS"}},
+        "experiment_strategy": {COL_VALUE: "WGS"},
         "center": {COL_VALUE: "HudsonAlpha Institute for Biotechnology"},
         "library_name": {COL_NAME: "library"},
         "library_strand": None,
@@ -133,12 +132,6 @@ mappings_dict = {
         "mean_depth": None,
         "total_reads": None,
         "mean_read_length": None,
-        "_links": {
-            'aliquot': {
-                'target_fk_col': {COL_VALUE: 'aliquot_id'},
-                'source_fk_col': {COL_NAME: "sample_description"}
-            }
-        },
         "_unique_id_col": {COL_VALUE: "seq_exp_id"}
     },
     "genomic_file": {
@@ -151,6 +144,10 @@ mappings_dict = {
         "md5sum": {COL_NAME: "md5sum"},
         "controlled_access": {COL_VALUE: "True", COL_TYPE: "boolean"},
         "_links": {
+            'biospecimen': {
+                'target_fk_col': {COL_VALUE: 'biospecimen_id'},
+                'source_fk_col': {COL_NAME: "sample_id"}
+            },
             'sequencing_experiment': {
                 'target_fk_col': {COL_VALUE: 'sequencing_experiment_id'},
                 'source_fk_col': {COL_NAME: "seq_exp_id"}
