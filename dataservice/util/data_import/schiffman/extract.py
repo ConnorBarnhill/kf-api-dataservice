@@ -171,17 +171,6 @@ class Extractor(BaseExtractor):
         genomic_file_df = pd.merge(df1, biospecimen_df,
                                    left_on='phenotype_sheet_sample_name',
                                    right_on='sample_name')
-        genomic_file_df = genomic_file_df[['build_id',
-                                           'sample_name',
-                                           'file_name',
-                                           'file_format',
-                                           'uuid',
-                                           'form',
-                                           'hashes',
-                                           'file_size',
-                                           'file_url',
-                                           'data_type',
-                                           'md5sum']]
         return genomic_file_df
 
     def build_dfs(self):
