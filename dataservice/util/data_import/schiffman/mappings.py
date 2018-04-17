@@ -14,7 +14,7 @@ The values of these keys can be set to the following:
     - a constant value
         Use {COL_VALUE: <constant value>}
     - a constant value that will be mapped to another value via the provided
-    dict (see demographic gender as an example)
+    dict (see participant gender as an example)
         Use {COL_NAME: <name of col in input csv>,
             COL_VALUE: {<a potential value in the input csv>: <mapped value>,
                         <a potential value in the input csv>: <mapped value>}}
@@ -24,7 +24,18 @@ uniquely identify the records in the table. Specify the unique columns like
 this:
     "_unique_id_col": {COL_VALUE: <name of column in original table>}
 
-Links - TODO
+Links - Every entity must specify its parent entities using links.
+For example, participant has two parent entities: study and family. Thus,
+in the participant mapping, two links must be specified.
+
+A link is defined with the following format:
+
+"_links": {
+    '<name of Kids First Entity>': {
+        'target_fk_col': {COL_VALUE: '<name of foreign key in KF entity>'},
+        'source_fk_col': {COL_NAME: '<name of col in source csv>'}
+    }
+}
 """
 
 COL_NAME = "$col_name"
@@ -108,7 +119,7 @@ mappings_dict = {
         "age_at_event_days": {COL_NAME: "age_at_diagnosis_(days)"},
         "diagnosis": {COL_NAME: "morphology"},
         "tumor_location": None,
-        "diagnosis_category": None,
+        "diagnosis_category": {COL_VALUE: 'cancer'},
         "_links": {
             'participant': {
                 'target_fk_col': {COL_VALUE: 'participant_id'},
