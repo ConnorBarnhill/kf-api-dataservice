@@ -340,15 +340,8 @@ class Extractor(BaseExtractor):
 
         return df
 
-    def read_genomic_file_info(self, filepath=None):
-        """
-        Read genomic file info
-        """
-        if not filepath:
-            filepath = os.path.join(DATA_DIR, 'genomic_file_uuid.json')
-
-        return super(Extractor, self).read_genomic_files_info(filepath)
-
+    @reformat_column_names
+    @dropna_rows_cols
     def read_sample_gf_data(self, filepath=None):
         """
         Read sample to genomic file mapping
@@ -359,6 +352,15 @@ class Extractor(BaseExtractor):
         df = pd.read_excel(filepath)
         df = df.loc[df['Cohort'] == 'GMKF-Seidman']
         return df
+
+    def read_genomic_file_info(self, filepath=None):
+        """
+        Read genomic file info
+        """
+        if not filepath:
+            filepath = os.path.join(DATA_DIR, 'genomic_file_uuid.json')
+
+        return super(Extractor, self).read_genomic_files_info(filepath)
 
     def build_dfs(self):
         """
@@ -414,41 +416,33 @@ class Extractor(BaseExtractor):
         # Merge Diagnosis
         diagnosis_df = pd.merge(family_df, diagnosis_df, on='subjid')
 
-        # Merge Sample
-        df3 = pd.merge(family_df, participant_sample_df, on='subjid')
+        # Biospecimen df
+        biospecimen_df = self._create_biospecimen_df(
+            participant_sample_df, aliquot_df)
 
-        # Merge Aliquot
-        biospecimen_df = self._create_biospecimen_df(df3, aliquot_df)
-
-        # Merge Sequencing Experiment
-        full_participant_df = pd.merge(biospecimen_df, seq_exp_df,
-                                       left_on='external_id',
-                                       right_on='sample_name')
-
-        # Add study to full participant df
-        self._add_study_cols(study_df, full_participant_df)
+        # Genomic file df
+        # Merge biospecimen with sample file manifest
+        df1 = pd.merge(biospecimen_df, sample_gf_df,
+                       left_on='sampid', right_on='dbgap_subject_id')
+        # Merge genomic file metadata
+        df2 = pd.merge(df1, gf_file_info_df,
+                       left_on='bam_sample_id', right_on='file_name')
+        # Merge with sequencing experiment df
+        genomic_file_df = pd.merge(df2, seq_exp_df,
+                                   left_on='sampid', right_on='sample_name')
 
         # Add study to basic participant df
         participant_df = self._add_study_cols(study_df, demographic_df)
+
+        # Phenotype df
+        phenotype_participant_df = pd.merge(phenotype_df, participant_df,
+                                            on='subjid')
 
         # Add study to investigator df
         study_investigator_df = self._add_study_cols(study_df, investigator_df)
 
         # Add study to study files df
         study_study_files_df = self._add_study_cols(study_df, study_files_df)
-
-        # Phenotype df
-        phenotype_participant_df = pd.merge(phenotype_df, participant_df,
-                                            on='subjid')
-
-        # Merge with sequencing experiment df
-        df = pd.merge(sample_gf_df, full_participant_df,
-                      left_on='dbgap_subject_id',
-                      right_on='sample_name')
-        # Merge with genomic file info df
-        genomic_file_df = pd.merge(df, gf_file_info_df,
-                                   left_on='BAM sample ID',
-                                   right_on='file_name')
 
         # Dict to store dfs for each entity
         entity_dfs = {
@@ -462,7 +456,8 @@ class Extractor(BaseExtractor):
             'phenotype': phenotype_participant_df,
             'biospecimen': biospecimen_df,
             'genomic_file': genomic_file_df,
-            'default': full_participant_df
+            'sequencing_experiment': seq_exp_df,
+            'default': participant_df
         }
         return entity_dfs
 

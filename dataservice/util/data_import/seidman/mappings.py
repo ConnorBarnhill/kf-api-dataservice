@@ -117,7 +117,7 @@ mappings_dict = {
         "_unique_id_col": {COL_VALUE: "sampid"}
     },
     "sequencing_experiment": {
-        "external_id": {COL_NAME: "rg_barcode"},
+        "external_id": {COL_NAME: "sample_name"},
         "experiment_date": {COL_NAME: "date"},
         "experiment_strategy": {COL_NAME: "library_strategy"},
         "center": {COL_VALUE: "Baylor College of Medicine"},
@@ -131,7 +131,7 @@ mappings_dict = {
         "mean_depth": None,
         "total_reads": None,
         "mean_read_length": {COL_NAME: "mean_read_length"},
-        "_unique_id_col": {COL_VALUE: "rg_barcode"}
+        "_unique_id_col": {COL_VALUE: "sample_name"}
     },
     "genomic_file": {
         "uuid": {COL_NAME: "uuid"},
@@ -143,9 +143,13 @@ mappings_dict = {
         "md5sum": {COL_NAME: "md5sum"},
         "controlled_access": {COL_VALUE: "True", COL_TYPE: "boolean"},
         "_links": {
+            'biospecimen': {
+                'target_fk_col': {COL_VALUE: 'biospecimen_id'},
+                'source_fk_col': {COL_NAME: "sampid"}
+            },
             'sequencing_experiment': {
                 'target_fk_col': {COL_VALUE: 'sequencing_experiment_id'},
-                'source_fk_col': {COL_NAME: "rg_barcode"}
+                'source_fk_col': {COL_NAME: "sample_name"}
             }
         },
         "_unique_id_col": {COL_VALUE: "uuid"}
