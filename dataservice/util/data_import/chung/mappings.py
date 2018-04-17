@@ -184,13 +184,15 @@ mappings_dict = {
         "_unique_id_col": {COL_VALUE: "library-1_name"}
     },
     "genomic_file": {
-        "uuid": {COL_NAME: "uuid"},
-        "file_name": {COL_NAME: "file_name"},
-        "file_size": {COL_NAME: "file_size"},
+        "latest_did": {COL_NAME: "latest_did"},
+        # "file_name": {COL_NAME: "file_name"},
+        # "file_size": {COL_NAME: "file_size"},
         "file_format": {COL_NAME: "file_format"},
-        "file_url": {COL_NAME: "file_url"},
+        "is_harmonized": {COL_NAME: "is_harmonized"},
+        "reference_genome": None,
+        # "file_url": {COL_NAME: "file_url"},
         "data_type": {COL_NAME: "data_type"},
-        "md5sum": {COL_NAME: "md5sum"},
+        # "md5sum": {COL_NAME: "md5sum"},
         "controlled_access": {COL_VALUE: "True", COL_TYPE: "boolean"},
         "_links": {
             'biospecimen': {
