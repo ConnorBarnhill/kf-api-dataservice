@@ -6,6 +6,8 @@ from dataservice.util.data_import.utils import (
     extract_uncompressed_file_ext
 )
 
+HARMONIZED_TYPES = {'aligned reads'}
+
 
 class BaseExtractor(object):
 
@@ -24,7 +26,8 @@ class BaseExtractor(object):
             lambda file_url: basename(file_url))
         df['file_format'] = df['file_name'].apply(
             extract_uncompressed_file_ext)
-        df.rename(columns={'did': 'uuid', 'size': 'file_size'}, inplace=True)
+        df.rename(columns={'did': 'latest_did', 'size': 'file_size'},
+                  inplace=True)
 
         # Data type
         def func(x):
@@ -40,7 +43,10 @@ class BaseExtractor(object):
             else:
                 val = None
             return val
-
         df['data_type'] = df['file_name'].apply(func)
+
+        # Is harmonized
+        df['is_harmonized'] = df['data_type'].apply(
+            lambda data_type: True if data_type in HARMONIZED_TYPES else False)
 
         return df
