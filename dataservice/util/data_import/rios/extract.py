@@ -185,16 +185,6 @@ class Extractor(BaseExtractor):
         df = pd.read_csv(filepath)
         df['Sample Description'] = df['Sample Description'].apply(
             lambda x: x.split(':')[-1].strip())
-        df.describe(include=['O']).T.sort_values('unique', ascending=False)
-
-        # Subject sample mapping
-        filepath = os.path.join(DBGAP_DIR,
-                                'HL132375-01A1_V2_SubjectSampleMappingDS.txt')
-        subject_sample_df = pd.read_csv(filepath, delimiter='\t')
-
-        # Merge with subject samples
-        df = pd.merge(subject_sample_df, df, left_on='SAMPLE_ID',
-                      right_on='Sample Description')
 
         # Add unique col
         def func(row): return "_".join(['seq_exp', str(row.name)])
@@ -204,27 +194,44 @@ class Extractor(BaseExtractor):
 
     @reformat_column_names
     @dropna_rows_cols
-    def create_genomic_file_df(self, seq_exp_df):
+    def create_biospecimen_df(self, participant_df):
+        """
+        Create biospeciment df
+        """
+        # Sample attributes file
+        sample_attr_df = self.read_sample_attr_data()
+        # Subject sample file
+        subject_sample_df = self.read_subject_sample_data()
+        # Merge sample attributes w subject sample
+        df1 = pd.merge(subject_sample_df, sample_attr_df,
+                       how='left', on='sample_id')
+        # Merge sample with participant_df
+        biospecimen_df = pd.merge(df1, participant_df[['subject_id', 'sex']],
+                                  on='subject_id')
+
+        return biospecimen_df
+
+    @reformat_column_names
+    @dropna_rows_cols
+    def create_genomic_file_df(self, seq_exp_df, biospecimen_df):
         """
         Create genomic file df
         """
-        # Seq Exp Data
-        seq_exp_df = self.read_seq_exp_data()
-        seq_exp_df = seq_exp_df[['subject_id', 'library',
-                                 'sample_description', 'seq_exp_id']]
-
         # Genomic file info
         filepath = os.path.join(DATA_DIR, 'genomic_files_by_uuid.json')
         gf_df = super(Extractor, self).read_genomic_files_info(filepath)
-
         # Add library
         gf_df['library'] = gf_df['file_url'].apply(
             lambda file_url: os.path.dirname(file_url).split('/')[-1])
 
-        # Merge
-        df = pd.merge(seq_exp_df, gf_df, on='library')
+        # Merge sequencing experiments
+        df1 = pd.merge(seq_exp_df, gf_df, on='library')
 
-        return df
+        # Merge biospecimens
+        genomic_file_df = pd.merge(biospecimen_df, df1, left_on='sample_id',
+                                   right_on='sample_description')
+
+        return genomic_file_df
 
     def build_dfs(self):
         """
@@ -243,12 +250,6 @@ class Extractor(BaseExtractor):
         # Subject data
         subject_df = self.read_subject_data()
 
-        # Sample attributes file
-        sample_attr_df = self.read_sample_attr_data()
-
-        # Subject sample file
-        subject_sample_df = self.read_subject_sample_data()
-
         # Family
         family_df = self.read_family_data()
 
@@ -263,9 +264,6 @@ class Extractor(BaseExtractor):
 
         # Sequencing Experiment
         seq_exp_df = self.read_seq_exp_data()
-
-        # Genomic file
-        genomic_file_df = self.create_genomic_file_df(seq_exp_df)
 
         # Basic participant
         # Merge subject + phenotype
@@ -283,10 +281,11 @@ class Extractor(BaseExtractor):
         study_study_files_df = self._add_study_cols(study_df, study_files_df)
 
         # Biospecimen
-        # Merge sample attributes w subject sample
-        df1 = pd.merge(sample_attr_df, subject_sample_df, on='sample_id')
-        # Merge sample with subject
-        biospecimen_df = pd.merge(df1, subject_df, on='subject_id')
+        biospecimen_df = self.create_biospecimen_df(participant_df)
+
+        # Genomic file
+        genomic_file_df = self.create_genomic_file_df(seq_exp_df,
+                                                      biospecimen_df)
 
         # Dict to store dfs for each entity
         entity_dfs = {
