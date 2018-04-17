@@ -128,10 +128,9 @@ mappings_dict = {
         "_unique_id_col": {COL_VALUE: "sample_id"}
     },
     "sequencing_experiment": {
-        "external_id": {COL_NAME: "sample_id"},
+        "external_id": {COL_NAME: "library-1_name"},
         "experiment_date": None,
-        "experiment_strategy": {COL_NAME: "sample_use",
-                                COL_VALUE: {"Seq_DNA_WholeGenome": "WGS"}},
+        "experiment_strategy": {COL_VALUE: 'WGS'},
         "center": {COL_VALUE: "Broad Institute"},
         "library_name": {COL_NAME: "library-1_name"},
         "library_strand": None,
@@ -142,7 +141,8 @@ mappings_dict = {
         "mean_insert_size": {COL_NAME: "mean_insert_size"},
         "mean_depth": {COL_NAME: "mean_depth"},
         "total_reads": {COL_NAME: "total_reads"},
-        "mean_read_length": {COL_NAME: "mean_read_length"}
+        "mean_read_length": {COL_NAME: "mean_read_length"},
+        "_unique_id_col": {COL_VALUE: "library-1_name"}
     },
     "genomic_file": {
         "uuid": {COL_NAME: "uuid"},
@@ -154,9 +154,13 @@ mappings_dict = {
         "md5sum": {COL_NAME: "md5sum"},
         "controlled_access": {COL_VALUE: "True", COL_TYPE: "boolean"},
         "_links": {
+            'biospecimen': {
+                'target_fk_col': {COL_VALUE: 'biospecimen_id'},
+                'source_fk_col': {COL_NAME: "sample_id"}
+            },
             'sequencing_experiment': {
                 'target_fk_col': {COL_VALUE: 'sequencing_experiment_id'},
-                'source_fk_col': {COL_NAME: "seq_exp_id"}
+                'source_fk_col': {COL_NAME: "library-1_name"}
             }
         },
         "_unique_id_col": {COL_VALUE: "file_url"}

@@ -278,7 +278,8 @@ class Extractor(BaseExtractor):
         """
         Create a biospecimen data frame from sample and manifest info
         """
-        df = pd.merge(sample_df, sample_manifest_df, on='sample_id')
+        df = pd.merge(sample_df, sample_manifest_df,
+                      how='left', on='sample_id')
         from dataservice.util.data_import.utils import (
             NG_TO_MG,
             UL_TO_ML
@@ -316,22 +317,6 @@ class Extractor(BaseExtractor):
         df['subject_id'] = df['file_name'].apply(
             lambda file_name: file_name.split('.')[0])
         return df
-
-    def create_seq_exp_df(self, aliquot_df, gf_manifest_df):
-        """
-        Create sequencing_experiment df from aliquots and genomic_file manifest
-        """
-        seq_exp_df = pd.merge(gf_manifest_df,
-                              aliquot_df[['subject_id', 'sample_id',
-                                          'sample_use']],
-                              left_on='sample_alias',
-                              right_on='subject_id')
-
-        # Add unique col
-        def func(row): return "_".join(['seq_exp_id', str(row.name)])
-        seq_exp_df['seq_exp_id'] = seq_exp_df.apply(func, axis=1)
-
-        return seq_exp_df
 
     def build_dfs(self):
         """
@@ -384,7 +369,10 @@ class Extractor(BaseExtractor):
         # Merge proband from sample manifests
         participant_df = pd.merge(
             df2,
-            sample_manifest_df[['sample_id', 'is_proband']], on='sample_id')
+            sample_manifest_df[['sample_id', 'is_proband']],
+            how='left', on='sample_id')
+        participant_df['is_proband'].fillna(False, inplace=True)
+
         # Merge demographics
         participant_df = pd.merge(demographic_df, participant_df,
                                   on='subject_id')
@@ -399,12 +387,13 @@ class Extractor(BaseExtractor):
         # Merge with sample manifests
         biospecimen_df = self._create_biospecimen_df(df3, sample_manifest_df)
 
-        # Sequencing experiment df
-        seq_exp_df = self.create_seq_exp_df(biospecimen_df, gf_manifest_df)
-
         # Genomic file df
-        genomic_file_df = pd.merge(gf_file_info_df, seq_exp_df,
-                                   on='subject_id')
+        df4 = pd.merge(biospecimen_df[['subject_id', 'sample_id']],
+                       gf_file_info_df,
+                       on='subject_id')
+        genomic_file_df = pd.merge(df4, gf_manifest_df,
+                                   left_on='subject_id',
+                                   right_on='sample_alias')
 
         # Phenotype df
         # Merge with participant df
@@ -431,7 +420,7 @@ class Extractor(BaseExtractor):
             'phenotype': phenotype_df,
             'outcome': outcome_df,
             'biospecimen': biospecimen_df,
-            'sequencing_experiment': seq_exp_df,
+            'sequencing_experiment': gf_manifest_df,
             'genomic_file': genomic_file_df,
             'default': participant_df
         }
