@@ -166,6 +166,10 @@ mappings_dict = {
         "md5sum": {COL_NAME: "md5sum"},
         "controlled_access": {COL_VALUE: "True", COL_TYPE: "boolean"},
         "_links": {
+            'biospecimen': {
+                'target_fk_col': {COL_VALUE: 'biospecimen_id'},
+                'source_fk_col': {COL_NAME: "sample_name"}
+            },
             'sequencing_experiment': {
                 'target_fk_col': {COL_VALUE: 'sequencing_experiment_id'},
                 'source_fk_col': {COL_NAME: "build_id"}
