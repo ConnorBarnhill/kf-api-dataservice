@@ -293,8 +293,8 @@ class Extractor(BaseExtractor):
                       right_on='external_id')
 
         # Convert to standard units
-        df['concentration_ng_per_ul'] = (df['concentration_ng_per_ul']
-                                         * (NG_TO_MG / UL_TO_ML))
+        df['concentration_ng_per_ul'] = (
+            df['concentration_ng_per_ul'] * (NG_TO_MG / UL_TO_ML))
         df['initial_volume_microliters'] = (
             df['initial_volume_microliters'] * UL_TO_ML)
 
