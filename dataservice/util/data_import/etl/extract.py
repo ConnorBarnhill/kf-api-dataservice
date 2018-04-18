@@ -20,13 +20,11 @@ class BaseExtractor(object):
         df = pd.DataFrame(list(data.values()))
 
         # Reformat
-        df['md5sum'] = df['hashes'].apply(lambda x: x['md5'])
         df['file_url'] = df['urls'].apply(lambda x: x[0])
-        df['file_name'] = df['file_url'].apply(
-            lambda file_url: basename(file_url))
+        df['file_name'] = df['urls'].apply(lambda x: basename(x[0]))
         df['file_format'] = df['file_name'].apply(
             extract_uncompressed_file_ext)
-        df.rename(columns={'did': 'latest_did', 'size': 'file_size'},
+        df.rename(columns={'did': 'latest_did'},
                   inplace=True)
 
         # Data type
