@@ -175,14 +175,14 @@ mappings_dict = {
     },
     "genomic_file": {
         "latest_did": {COL_NAME: "latest_did"},
-        # "file_name": {COL_NAME: "file_name"},
-        # "file_size": {COL_NAME: "file_size"},
+        "file_name": {COL_NAME: "file_name"},
+        "size": {COL_NAME: "size"},
         "file_format": {COL_NAME: "file_format"},
         "is_harmonized": {COL_NAME: "is_harmonized"},
         "reference_genome": None,
-        # "file_url": {COL_NAME: "file_url"},
+        "urls": {COL_NAME: "urls"},
         "data_type": {COL_NAME: "data_type"},
-        # "md5sum": {COL_NAME: "md5sum"},
+        "hashes": {COL_NAME: "hashes"},
         "controlled_access": {COL_VALUE: "True", COL_TYPE: "boolean"},
         "_links": {
             'biospecimen': {
