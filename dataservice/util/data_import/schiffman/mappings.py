@@ -63,7 +63,13 @@ mappings_dict = {
         "_unique_id_col": {COL_VALUE: "investigator_name"}
     },
     "study_file": {
+        "latest_did": {COL_NAME: "latest_did"},
         "file_name": {COL_NAME: "study_file_name"},
+        "data_type": None,
+        "file_format": None,
+        'size': {COL_NAME: 'size'},
+        'urls': {COL_NAME: 'urls'},
+        'hashes': {COL_NAME: 'hashes'},
         "_unique_id_col": {COL_VALUE: "study_file_name"},
         "_links": {
             'study': {
