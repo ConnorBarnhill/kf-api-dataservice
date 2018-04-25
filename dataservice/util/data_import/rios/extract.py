@@ -16,17 +16,16 @@ class Extractor(BaseExtractor):
 
     @reformat_column_names
     @dropna_rows_cols
-    def read_study_file_data(self, filepaths=None):
+    def read_study_file_data(self):
         """
         Read in raw study files
         """
-        if not filepaths:
-            filepaths = os.listdir(DBGAP_DIR)
-            filepaths.extend(os.listdir(MANIFESTS_DIR))
+        filepaths = [os.path.join(DBGAP_DIR, f)
+                     for f in os.listdir(DBGAP_DIR)]
+        filepaths.extend([os.path.join(MANIFESTS_DIR, f)
+                          for f in os.listdir(MANIFESTS_DIR)])
 
-        study_files = [{"study_file_name": f}
-                       for f in filepaths]
-        return pd.DataFrame(study_files)
+        return self.create_study_file_df(filepaths)
 
     @reformat_column_names
     @dropna_rows_cols
