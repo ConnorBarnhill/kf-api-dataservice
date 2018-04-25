@@ -54,15 +54,6 @@ class BaseLoader(object):
                 investigator = Investigator.query.get(investigator_id)
                 db.session.delete(investigator)
 
-        # Delete family
-        from dataservice.api.family.models import Family
-        Family.query.delete()
-
-        # Delete sequencing_experiment
-        from dataservice.api.sequencing_experiment.models import (
-            SequencingExperiment)
-        SequencingExperiment.query.delete()
-
         db.session.commit()
 
     def run(self, entity_dict, **kwargs):
