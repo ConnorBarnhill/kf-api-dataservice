@@ -1,5 +1,6 @@
 from os.path import basename
 import pandas as pd
+import uuid
 
 from dataservice.util.data_import.utils import (
     read_json,
@@ -10,6 +11,18 @@ HARMONIZED_TYPES = {'aligned reads'}
 
 
 class BaseExtractor(object):
+
+    def create_study_file_df(self, filepaths):
+        from os import stat
+
+        study_files = [{"study_file_name": basename(f),
+                        'latest_did': str(uuid.uuid4()),
+                        'size': stat(f).st_size,
+                        'urls': ['s3://bucket/key'],
+                        'hashes': {'md5': str(uuid.uuid4()).replace('-', '')}
+                        }
+                       for f in filepaths]
+        return pd.DataFrame(study_files)
 
     def read_genomic_files_info(self, filepath):
         """
