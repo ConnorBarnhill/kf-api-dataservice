@@ -143,8 +143,7 @@ mappings_dict = {
         "tumor_descriptor": None,
         "shipment_origin": {COL_NAME: "sample_source"},
         "shipment_date": None,
-        "shipment_destination": {COL_VALUE: "HudsonAlpha Institute"
-                                 " for Biotechnology"},
+        "sequencing_center_id": {COL_VALUE: "SC_X1N69WJM"},
         "analyte_type": {COL_NAME: "analyte_type"},
         "concentration_mg_per_ml": None,
         "volume_ml": None,
@@ -160,7 +159,7 @@ mappings_dict = {
         "external_id": {COL_NAME: "seq_exp_id"},
         "experiment_date": None,
         "experiment_strategy": {COL_VALUE: "WGS"},
-        "center": {COL_VALUE: "HudsonAlpha Institute for Biotechnology"},
+        "sequencing_center_id": {COL_VALUE: "SC_X1N69WJM"},
         "library_name": {COL_NAME: "library"},
         "library_strand": None,
         "is_paired_end": {COL_VALUE: "True", COL_TYPE: "boolean"},
