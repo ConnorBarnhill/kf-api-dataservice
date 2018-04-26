@@ -7,7 +7,7 @@ from dataservice.util.data_import.utils import (
 )
 from dataservice.util.data_import.etl.extract import BaseExtractor
 
-DATA_DIR = '/Users/singhn4/Projects/kids_first/data'
+DATA_DIR = os.environ.get('DATA_DIR')
 
 
 class Extractor(BaseExtractor):

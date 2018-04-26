@@ -7,7 +7,7 @@ from dataservice.util.data_import.utils import (
 )
 from dataservice.util.data_import.etl.extract import BaseExtractor
 
-DATA_DIR = '/Users/singhn4/Projects/kids_first/data/Seidman_2015'
+DATA_DIR = os.environ.get('SEIDMAN_DATA_DIR')
 DBGAP_DIR = os.path.join(DATA_DIR, 'dbgap')
 ALIQUOT_SHIP_DIR = os.path.join(DATA_DIR, 'manifests', 'shipping')
 
