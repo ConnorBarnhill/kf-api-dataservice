@@ -58,11 +58,13 @@ mappings_dict = {
         "_unique_id_col": {COL_VALUE: "study_id"}
     },
     "investigator": {
+        "external_id": None,
         'name': {COL_NAME: 'investigator_name'},
         'institution': {COL_NAME: 'institution'},
         "_unique_id_col": {COL_VALUE: "investigator_name"},
     },
     "study_file": {
+        "external_id": None,
         "latest_did": {COL_NAME: "latest_did"},
         "file_name": {COL_NAME: "study_file_name"},
         "data_type": None,
@@ -106,6 +108,7 @@ mappings_dict = {
         }
     },
     "family_relationship": {
+        "external_id": None,
         "proband": {COL_NAME: "subject_id"},
         "mother": {COL_NAME: "mother"},
         "father": {COL_NAME: "father"},
@@ -113,8 +116,9 @@ mappings_dict = {
     },
     "phenotype": {
         "age_at_event_days": None,
-        "phenotype": {COL_NAME: "phenotype"},
-        "hpo_id": {COL_NAME: "hpo_id"},
+        "source_text_phenotype": {COL_NAME: "phenotype"},
+        "hpo_id_phenotype": {COL_NAME: "hpo_id"},
+        "snomed_id_phenotype": None,
         "observed": {COL_NAME: "observed"},
         "_links": {
             'participant': {
@@ -124,10 +128,28 @@ mappings_dict = {
         },
         "_unique_id_col": {COL_VALUE: "subject_id"}
     },
+    "outcome": {
+        "age_at_event_days": None,
+        "external_id": None,
+        "vital_status": None,
+        "disease_related": None,
+        "_links": {
+            'participant': {
+                'target_fk_col': {COL_VALUE: 'participant_id'},
+                'source_fk_col': {COL_NAME: "subject_id"}
+            }
+        },
+        "_unique_id_col": None
+    },
     "diagnosis": {
         "age_at_event_days": None,
-        "diagnosis": {COL_NAME: "diagnosis"},
-        "tumor_location": None,
+        "source_text_diagnosis": {COL_NAME: "diagnosis"},
+        "source_text_tumor_location": None,
+        "mondo_id_diagnosis": None,
+        "icd_id_diagnosis": None,
+        "uberon_id_tumor_location": None,
+        "ncit_id_diagnosis": None,
+        "spatial_descriptor": None,
         "diagnosis_category": {COL_VALUE: 'structural birth defect'},
         "_links": {
             'participant': {
@@ -140,13 +162,16 @@ mappings_dict = {
     "biospecimen": {
         "external_sample_id": {COL_NAME: "sample_id"},
         "external_aliquot_id": None,
-        "tissue_type": {COL_NAME: "is_tumor",
-                        COL_VALUE: {"Y": "Tumor",
-                                    "N": "Normal"}},
+        "source_text_tissue_type": {COL_NAME: "is_tumor",
+                                    COL_VALUE: {"Y": "Tumor",
+                                                "N": "Normal"}},
         "composition": {COL_NAME: "histological_type"},
-        "anatomical_site": {COL_NAME: "body_site"},
+        "source_text_anatomical_site": {COL_NAME: "body_site"},
         "age_at_event_days": None,
-        "tumor_descriptor": None,
+        "source_text_tumor_descriptor": None,
+        "ncit_id_tissue_type": None,
+        "ncit_id_anatomical_site": None,
+        "spatial_descriptor": None,
         "shipment_origin": {COL_NAME: "sample_source"},
         "shipment_date": None,
         "sequencing_center_id": {COL_VALUE: "SC_X1N69WJM"},
@@ -179,6 +204,8 @@ mappings_dict = {
         "_unique_id_col": {COL_VALUE: "seq_exp_id"}
     },
     "genomic_file": {
+        "external_id": None,
+        "availability": None,
         "latest_did": {COL_NAME: "latest_did"},
         "file_name": {COL_NAME: "file_name"},
         "size": {COL_NAME: "size"},
