@@ -7,7 +7,7 @@ from dataservice.util.data_import.utils import (
 )
 from dataservice.util.data_import.etl.extract import BaseExtractor
 
-DATA_DIR = '/Users/singhn4/Projects/kids_first/data/Rios_Wise_2016'
+DATA_DIR = os.environ.get('RIOS_DATA_DIR')
 DBGAP_DIR = os.path.join(DATA_DIR, 'dbgap')
 MANIFESTS_DIR = os.path.join(DATA_DIR, 'manifests')
 
