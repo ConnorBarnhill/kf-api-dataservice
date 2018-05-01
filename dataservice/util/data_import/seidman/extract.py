@@ -7,12 +7,15 @@ from dataservice.util.data_import.utils import (
 )
 from dataservice.util.data_import.etl.extract import BaseExtractor
 
-DATA_DIR = os.environ.get('SEIDMAN_DATA_DIR')
-DBGAP_DIR = os.path.join(DATA_DIR, 'dbgap')
-ALIQUOT_SHIP_DIR = os.path.join(DATA_DIR, 'manifests', 'shipping')
-
 
 class Extractor(BaseExtractor):
+
+    def __init__(self, config):
+        super().__init__(config)
+        self.data_dir = config['extract']['data_dir']
+        self.dbgap_dir = os.path.join(self.data_dir, 'dbgap')
+        self.manifest_dir = os.path.join(self.data_dir, 'manifests',
+                                         'shipping')
 
     @reformat_column_names
     @dropna_rows_cols
@@ -20,8 +23,8 @@ class Extractor(BaseExtractor):
         """
         Read in raw study files
         """
-        filepaths = [os.path.join(DBGAP_DIR, f)
-                     for f in os.listdir(DBGAP_DIR)]
+        filepaths = [os.path.join(self.dbgap_dir, f)
+                     for f in os.listdir(self.dbgap_dir)]
 
         return self.create_study_file_df(filepaths)
 
@@ -32,7 +35,7 @@ class Extractor(BaseExtractor):
         Read study data
         """
         if not filepath:
-            filepath = os.path.join(DATA_DIR,
+            filepath = os.path.join(self.data_dir,
                                     'study.txt')
         df = pd.read_csv(filepath)
 
@@ -45,7 +48,7 @@ class Extractor(BaseExtractor):
         Read investigator data
         """
         if not filepath:
-            filepath = os.path.join(DATA_DIR,
+            filepath = os.path.join(self.data_dir,
                                     'investigator.txt')
         df = pd.read_csv(filepath)
 
@@ -58,7 +61,7 @@ class Extractor(BaseExtractor):
         Read family data for all participants
         """
         if not filepath:
-            filepath = os.path.join(DBGAP_DIR,
+            filepath = os.path.join(self.dbgap_dir,
                                     '7a_dbGaP_PedigreeDS.txt')
         df = pd.read_csv(filepath,
                          delimiter='\t',
@@ -79,12 +82,12 @@ class Extractor(BaseExtractor):
         Read phenotype data
         """
         # Read in cached phenotypes or create if they don't exist
-        hpo_fp = os.path.join(DATA_DIR, 'phenotype_hpo_mapping.txt')
+        hpo_fp = os.path.join(self.data_dir, 'phenotype_hpo_mapping.txt')
         if os.path.exists(hpo_fp):
             return pd.read_csv(hpo_fp, dtype={'SUBJID': str})
 
         filepath = os.path.join(
-            DBGAP_DIR,
+            self.dbgap_dir,
             '3a_dbGaP_SubjectPhenotypes_ExtracardiacFindingsDS.txt')
 
         # Read csv
@@ -118,7 +121,7 @@ class Extractor(BaseExtractor):
 
         # Add HPOs
         from dataservice.util.data_import.etl.hpo_mapper import mapper
-        hpo_mapper = mapper.HPOMapper(DATA_DIR)
+        hpo_mapper = mapper.HPOMapper(self.data_dir)
         phenotype_df = hpo_mapper.add_hpo_id_col(phenotype_df)
 
         # Map to positive/negative
@@ -145,7 +148,7 @@ class Extractor(BaseExtractor):
         Read gender data for all participants
         """
         if not filepath:
-            filepath = os.path.join(DBGAP_DIR,
+            filepath = os.path.join(self.dbgap_dir,
                                     '3a_dbGaP_SubjectPhenotypes_GenderDS.txt')
         df = pd.read_csv(filepath,
                          delimiter='\t',
@@ -167,7 +170,7 @@ class Extractor(BaseExtractor):
                 '3a_dbGaP_SubjectPhenotypes_PaternalDemographicsDS'
                 '-fixed-03-09-2018.txt']
 
-            filepaths = [os.path.join(DBGAP_DIR, filename)
+            filepaths = [os.path.join(self.dbgap_dir, filename)
                          for filename in filenames
                          ]
 
@@ -202,7 +205,7 @@ class Extractor(BaseExtractor):
         """
         if not filepath:
             filename = '3a_dbGaP_SubjectPhenotypes_PatientDiagnosisDS.txt'
-            filepath = os.path.join(DBGAP_DIR, filename)
+            filepath = os.path.join(self.dbgap_dir, filename)
 
         diagnosis_df = pd.read_csv(filepath,
                                    delimiter='\t',
@@ -223,7 +226,7 @@ class Extractor(BaseExtractor):
         """
         if not filepath:
             filename = '6a_dbGaP_SubjectSampleMappingDS.txt'
-            filepath = os.path.join(DBGAP_DIR, filename)
+            filepath = os.path.join(self.dbgap_dir, filename)
 
         participant_sample_df = pd.read_csv(filepath,
                                             delimiter='\t',
@@ -239,9 +242,9 @@ class Extractor(BaseExtractor):
         Read aliquot data (from PI/sample source center)
         """
         if not filepaths:
-            filepaths = [os.path.join(ALIQUOT_SHIP_DIR, filename)
+            filepaths = [os.path.join(self.manifest_dir, filename)
 
-                         for filename in os.listdir(ALIQUOT_SHIP_DIR)
+                         for filename in os.listdir(self.manifest_dir)
                          ]
 
         # Combine all manifest files
@@ -302,7 +305,7 @@ class Extractor(BaseExtractor):
     @dropna_rows_cols
     def read_seq_experiment_data(self, filepath=None):
         if not filepath:
-            filepath = os.path.join(DATA_DIR, "seidman_metadata.xlsx")
+            filepath = os.path.join(self.data_dir, "seidman_metadata.xlsx")
 
         df = pd.read_excel(filepath, dtype={"date": str})
         # Rename some columns
@@ -345,7 +348,7 @@ class Extractor(BaseExtractor):
         Read sample to genomic file mapping
         """
         if not filepath:
-            filepath = os.path.join(DATA_DIR, 'manifests',
+            filepath = os.path.join(self.data_dir, 'manifests',
                                     'GMKF_BAMsampleIDs.xlsx')
         df = pd.read_excel(filepath)
         df = df.loc[df['Cohort'] == 'GMKF-Seidman']
@@ -356,7 +359,7 @@ class Extractor(BaseExtractor):
         Read genomic file info
         """
         if not filepath:
-            filepath = os.path.join(DATA_DIR, 'genomic_file_uuid.json')
+            filepath = os.path.join(self.data_dir, 'genomic_file_uuid.json')
 
         return super(Extractor, self).read_genomic_files_info(filepath)
 
