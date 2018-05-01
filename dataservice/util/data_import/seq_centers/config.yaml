@@ -1,0 +1,15 @@
+entities:
+    - sequencing_center
+
+extract:
+  data_dir: '/Users/singhn4/Projects/kids_first/data'
+
+transform:
+  mappings_file: '/Users/singhn4/backup-kf-api-dataservice/dataservice/util/data_import/seq_centers/mappings.py'
+
+load:
+
+drop_data:
+    study:
+        attribute: 'external_id'
+        value: ''
