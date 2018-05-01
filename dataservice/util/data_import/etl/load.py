@@ -7,13 +7,13 @@ from sqlalchemy.exc import IntegrityError
 from dataservice.extensions import db
 from dataservice import create_app
 from dataservice.util.data_import.utils import to_camel_case
-from dataservice.util.data_import.etl.defaults import DEFAULT_ENTITY_TYPES
 from dataservice.api.family_relationship.models import FamilyRelationship
 
 
 class BaseLoader(object):
 
-    def __init__(self, config_name=None):
+    def __init__(self, config, config_name=None):
+        self.config = config
         if not config_name:
             config_name = os.environ.get('FLASK_CONFIG', 'default')
         self.setup(config_name)
@@ -35,14 +35,14 @@ class BaseLoader(object):
         db.session.remove()
         self.app_context.pop()
 
-    def drop_all(self, study_external_id):
+    def drop_all(self, **kwargs):
         """
         Delete all data related to a study
         """
         from dataservice.api.study.models import Study
         from dataservice.api.investigator.models import Investigator
 
-        studies = Study.query.filter_by(external_id=study_external_id).all()
+        studies = Study.query.filter_by(**kwargs).all()
         for study in studies:
             investigator_id = study.investigator_id
 
@@ -60,7 +60,7 @@ class BaseLoader(object):
         """
         Load all entities into db
         """
-        entity_types = kwargs.get('entity_types', DEFAULT_ENTITY_TYPES)
+        entity_types = kwargs.get('entity_types')
         skip_entities = ['family_relationship']
 
         # For each entity type
