@@ -9,7 +9,8 @@ class BaseTransformer(object):
 
     def __init__(self, config):
         self.config = config
-        self.mapper = Mapper(self.import_mappings(config))
+        mappings = self.import_mappings(config)
+        self.mapper = Mapper(mappings) if mappings else None
 
     def import_mappings(self, config):
         """

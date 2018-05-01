@@ -39,13 +39,18 @@ class BaseETLModule(object):
 
         # Transform from dataframe to dicts
         print('Begin transformation ...')
-        content = self.transformer.run(df_dict, entity_types=entity_types)
-        print('Completed transformation\n')
+        content = None
+        if not self.transformer.mapper:
+            print('Aborting transformation! No mappings found.')
+        else:
+            content = self.transformer.run(df_dict, entity_types=entity_types)
+            print('Completed transformation\n')
 
         # Load into db via sqlalchemy
-        print('Begin loading ...')
-        self.loader.run(content, entity_types=entity_types)
-        print('Completed loading\n')
+        if content:
+            print('Begin loading ...')
+            self.loader.run(content, entity_types=entity_types)
+            print('Completed loading\n')
 
     def drop_data(self):
         """
