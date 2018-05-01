@@ -1,16 +1,33 @@
-from pprint import pprint
+import importlib.util
+import os
 from pandas import DataFrame
 
-from dataservice.util.data_import.etl.defaults import DEFAULT_ENTITY_TYPES
+from dataservice.util.data_import.etl.mapper import Mapper
 
 
 class BaseTransformer(object):
 
-    def __init__(self, mappings_dict, mapper=None):
-        if not mapper:
-            from dataservice.util.data_import.etl.mapper import Mapper
-            mapper = Mapper(mappings_dict)
-        self.mapper = mapper
+    def __init__(self, config):
+        self.config = config
+        self.mapper = Mapper(self.import_mappings(config))
+
+    def import_mappings(self, config):
+        """
+        Import mappings module
+        """
+        # Return empty mappings dict if file not found
+        fp = config['transform']['mappings_file']
+        if not os.path.isfile(fp):
+            print('Could not import mappings, file {} not found'.format(fp))
+            return {}
+
+        # Import mappings module from file
+        module_name = os.path.basename(fp).split(".")[0]
+        spec = importlib.util.spec_from_file_location(module_name, fp)
+        mappings_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mappings_module)
+
+        return mappings_module.mappings_dict
 
     def run(self, entity_dfs, **kwargs):
         """
@@ -22,7 +39,7 @@ class BaseTransformer(object):
         Column values are filled in to dict values
         """
         nrows = kwargs.get('nrows')
-        entity_type_list = kwargs.get('entity_types', DEFAULT_ENTITY_TYPES)
+        entity_type_list = kwargs.get('entity_types')
         entity_dict = {}
 
         # For each entity type
