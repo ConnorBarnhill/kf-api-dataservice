@@ -29,7 +29,8 @@ def erd():
 
 @click.command()
 @click.argument('etl_module_name')
-def import_data(etl_module_name):
+@click.argument('config_file', type=click.Path(), required=False)
+def import_data(etl_module_name, config_file):
     """
     ETL real data to database
 
@@ -37,12 +38,13 @@ def import_data(etl_module_name):
     dataservice.util.data_import package. Example: 'seidman'
     """
     from dataservice.util.data_import import main
-    main.run(etl_module_name)
+    main.run(etl_module_name, config_file)
 
 
 @click.command()
 @click.argument('etl_module_name')
-def drop_data(etl_module_name):
+@click.argument('config_file', type=click.Path(), required=False)
+def drop_data(etl_module_name, config_file):
     """
     ETL real data to database
 
@@ -50,7 +52,7 @@ def drop_data(etl_module_name):
     dataservice.util.data_import package. Example: 'seidman'
     """
     from dataservice.util.data_import import main
-    main.drop_data(etl_module_name)
+    main.drop_data(etl_module_name, config_file)
 
 
 @click.command()

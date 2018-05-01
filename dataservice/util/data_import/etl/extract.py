@@ -12,6 +12,9 @@ HARMONIZED_TYPES = {'aligned reads'}
 
 class BaseExtractor(object):
 
+    def __init__(self, config):
+        self.config = config
+
     def create_study_file_df(self, filepaths):
         from os import stat
 
