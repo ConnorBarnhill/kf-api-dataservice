@@ -8,10 +8,12 @@ from dataservice.util.data_import.utils import (
 )
 from dataservice.util.data_import.etl.extract import BaseExtractor
 
-DATA_DIR = os.environ.get('SCHIFFMAN_DATA_DIR')
-
 
 class Extractor(BaseExtractor):
+
+    def __init__(self, config):
+        super().__init__(config)
+        self.data_dir = config['extract']['data_dir']
 
     @reformat_column_names
     @dropna_rows_cols
@@ -19,8 +21,8 @@ class Extractor(BaseExtractor):
         """
         Read in raw study files
         """
-        filepaths = [os.path.join(DATA_DIR, f)
-                     for f in os.listdir(DATA_DIR)]
+        filepaths = [os.path.join(self.data_dir, f)
+                     for f in os.listdir(self.data_dir)]
 
         return self.create_study_file_df(filepaths)
 
@@ -31,7 +33,7 @@ class Extractor(BaseExtractor):
         Read study data
         """
         if not filepath:
-            filepath = os.path.join(DATA_DIR,
+            filepath = os.path.join(self.data_dir,
                                     'study.txt')
         df = pd.read_csv(filepath)
 
@@ -44,7 +46,7 @@ class Extractor(BaseExtractor):
         Read investigator data
         """
         if not filepath:
-            filepath = os.path.join(DATA_DIR,
+            filepath = os.path.join(self.data_dir,
                                     'investigator.txt')
         df = pd.read_csv(filepath)
 
@@ -57,7 +59,8 @@ class Extractor(BaseExtractor):
         Read all the data into a dataframe
         """
         if not filepath:
-            filepath = os.path.join(DATA_DIR, 'Schiffman_X01 Sample List.xlsx')
+            filepath = os.path.join(self.data_dir,
+                                    'Schiffman_X01 Sample List.xlsx')
 
         df = pd.read_excel(filepath)
 
@@ -142,7 +145,7 @@ class Extractor(BaseExtractor):
         """
         if not filepath:
             filepath = os.path.join(
-                DATA_DIR,
+                self.data_dir,
                 'Schiffman_EwingSarcoma_QC_vs_Phenotype.xlsx')
 
         df = pd.read_excel(filepath)
@@ -155,7 +158,7 @@ class Extractor(BaseExtractor):
         return df
 
     def create_genomic_file_df(self, genomic_df, biospecimen_df):
-        filepath = os.path.join(DATA_DIR, 'genomic_file_uuid.json')
+        filepath = os.path.join(self.data_dir, 'genomic_file_uuid.json')
         gf_info_df = super(Extractor, self).read_genomic_files_info(filepath)
         genomic_df = genomic_df[['build_id',
                                  'phenotype_sheet_sample_name',

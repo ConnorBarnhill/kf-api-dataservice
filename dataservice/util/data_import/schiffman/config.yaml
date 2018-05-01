@@ -1,0 +1,26 @@
+entities:
+    - 'investigator'
+    - 'study'
+    - 'study_file'
+    - 'family'
+    - 'participant'
+    - 'family_relationship'
+    - 'diagnosis'
+    - 'phenotype'
+    - 'outcome'
+    - 'biospecimen'
+    - 'sequencing_experiment'
+    - 'genomic_file'
+
+extract:
+  data_dir: '/Users/singhn4/Projects/kids_first/data/Schiffman'
+
+transform:
+  mappings_file: '/Users/singhn4/backup-kf-api-dataservice/dataservice/util/data_import/schiffman/mappings.py'
+
+load:
+
+drop_data:
+    study:
+        attribute: external_id
+        value: 'phs001194'
