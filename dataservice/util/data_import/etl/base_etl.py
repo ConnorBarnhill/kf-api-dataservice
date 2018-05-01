@@ -38,11 +38,11 @@ class BaseETLModule(object):
         print('Completed extraction\n')
 
         # Transform from dataframe to dicts
-        print('Begin transformation ...')
         content = None
         if not self.transformer.mapper:
             print('Aborting transformation! No mappings found.')
         else:
+            print('Begin transformation ...')
             content = self.transformer.run(df_dict, entity_types=entity_types)
             print('Completed transformation\n')
 
