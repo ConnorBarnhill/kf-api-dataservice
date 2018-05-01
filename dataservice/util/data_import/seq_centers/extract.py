@@ -7,10 +7,12 @@ from dataservice.util.data_import.utils import (
 )
 from dataservice.util.data_import.etl.extract import BaseExtractor
 
-DATA_DIR = os.environ.get('DATA_DIR')
-
 
 class Extractor(BaseExtractor):
+
+    def __init__(self, config):
+        super().__init__(config)
+        self.data_dir = config['extract']['data_dir']
 
     @reformat_column_names
     @dropna_rows_cols
@@ -19,7 +21,7 @@ class Extractor(BaseExtractor):
         Read in raw study files
         """
         if not filepath:
-            filepath = os.path.join(DATA_DIR,
+            filepath = os.path.join(self.data_dir,
                                     'seq-centers.txt')
         if not os.path.exists(filepath):
             seq_centers = [{'name': 'Broad Institute',
