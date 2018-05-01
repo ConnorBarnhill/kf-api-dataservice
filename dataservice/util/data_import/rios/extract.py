@@ -7,12 +7,14 @@ from dataservice.util.data_import.utils import (
 )
 from dataservice.util.data_import.etl.extract import BaseExtractor
 
-DATA_DIR = os.environ.get('RIOS_DATA_DIR')
-DBGAP_DIR = os.path.join(DATA_DIR, 'dbgap')
-MANIFESTS_DIR = os.path.join(DATA_DIR, 'manifests')
-
 
 class Extractor(BaseExtractor):
+
+    def __init__(self, config):
+        super().__init__(config)
+        self.data_dir = config['extract']['data_dir']
+        self.dbgap_dir = os.path.join(self.data_dir, 'dbgap')
+        self.manifest_dir = os.path.join(self.data_dir, 'manifests')
 
     @reformat_column_names
     @dropna_rows_cols
@@ -20,10 +22,10 @@ class Extractor(BaseExtractor):
         """
         Read in raw study files
         """
-        filepaths = [os.path.join(DBGAP_DIR, f)
-                     for f in os.listdir(DBGAP_DIR)]
-        filepaths.extend([os.path.join(MANIFESTS_DIR, f)
-                          for f in os.listdir(MANIFESTS_DIR)])
+        filepaths = [os.path.join(self.dbgap_dir, f)
+                     for f in os.listdir(self.dbgap_dir)]
+        filepaths.extend([os.path.join(self.manifest_dir, f)
+                          for f in os.listdir(self.manifest_dir)])
 
         return self.create_study_file_df(filepaths)
 
@@ -34,7 +36,7 @@ class Extractor(BaseExtractor):
         Read study data
         """
         if not filepath:
-            filepath = os.path.join(DATA_DIR,
+            filepath = os.path.join(self.data_dir,
                                     'study.txt')
         df = pd.read_csv(filepath)
 
@@ -47,7 +49,7 @@ class Extractor(BaseExtractor):
         Read investigator data
         """
         if not filepath:
-            filepath = os.path.join(DATA_DIR,
+            filepath = os.path.join(self.data_dir,
                                     'investigator.txt')
         df = pd.read_csv(filepath)
 
@@ -57,7 +59,7 @@ class Extractor(BaseExtractor):
     @dropna_rows_cols
     def read_subject_data(self, filepath=None):
         if not filepath:
-            filepath = os.path.join(DBGAP_DIR,
+            filepath = os.path.join(self.dbgap_dir,
                                     'HL13237501A1_V3_SubjectDS.txt')
         df = pd.read_csv(filepath, delimiter='\t', dtype={'SUBJID': str})
         df = df[['SUBJECT_ID', 'CONSENT']]
@@ -80,7 +82,7 @@ class Extractor(BaseExtractor):
         Read sample attributes file
         """
         if not filepath:
-            filepath = os.path.join(DBGAP_DIR,
+            filepath = os.path.join(self.dbgap_dir,
                                     'HL132375-01A1_V2_SampleAttributesDS.txt')
         return pd.read_csv(filepath, delimiter='\t')
 
@@ -92,7 +94,7 @@ class Extractor(BaseExtractor):
         """
         if not filepath:
             filepath = os.path.join(
-                DBGAP_DIR,
+                self.dbgap_dir,
                 'HL132375-01A1_V2_SubjectSampleMappingDS.txt')
         return pd.read_csv(filepath, delimiter='\t')
 
@@ -100,7 +102,7 @@ class Extractor(BaseExtractor):
     @dropna_rows_cols
     def read_phenotype_data(self, filepath=None):
         if not filepath:
-            filepath = os.path.join(DBGAP_DIR,
+            filepath = os.path.join(self.dbgap_dir,
                                     'HL132375-01A1_V2_SubjectPhenotypesDS.txt')
         df = pd.read_csv(filepath,
                          delimiter='\t',
@@ -166,7 +168,7 @@ class Extractor(BaseExtractor):
     @dropna_rows_cols
     def read_family_data(self, filepath=None):
         if not filepath:
-            filepath = os.path.join(DBGAP_DIR,
+            filepath = os.path.join(self.dbgap_dir,
                                     'HL132375-01A1_V2_PedgreeDS.txt')
         df = pd.read_csv(filepath, delimiter='\t', dtype={'SUBJID': str})
         del df['SEX']
@@ -179,7 +181,7 @@ class Extractor(BaseExtractor):
         Read sequencing experiment data
         """
         if not filepath:
-            filepath = os.path.join(MANIFESTS_DIR, 'manifest_171210.csv')
+            filepath = os.path.join(self.manifest_dir, 'manifest_171210.csv')
 
         df = pd.read_csv(filepath)
         df['Sample Description'] = df['Sample Description'].apply(
@@ -217,7 +219,7 @@ class Extractor(BaseExtractor):
         Create genomic file df
         """
         # Genomic file info
-        filepath = os.path.join(DATA_DIR, 'genomic_files_by_uuid.json')
+        filepath = os.path.join(self.data_dir, 'genomic_files_by_uuid.json')
         gf_df = super(Extractor, self).read_genomic_files_info(filepath)
         # Add library
         gf_df['library'] = gf_df['file_url'].apply(
