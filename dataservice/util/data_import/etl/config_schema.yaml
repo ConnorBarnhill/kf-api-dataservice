@@ -1,0 +1,53 @@
+$schema: "http://json-schema.org/draft-04/schema#"
+
+title: "ETL Config"
+description: "Schema for ETL module configuration yaml"
+type: "object"
+
+properties:
+    extract:
+        description: "Extract module configuration parameters"
+        type: "object"
+        properties:
+            data_dir:
+                description: "Path to the directory storing source data"
+                type: "string"
+        required:
+            - data_dir
+    transform:
+        description: "Transform module configuration parameters"
+        type: "object"
+        properties:
+            mappings_file:
+                description: "Path to the mappings file needed to transform the source data into Kids First form"
+                type: "string"
+        required:
+            - mappings_file
+    drop_data:
+        description: "Parameters required to drop all data associated with this study"
+        type: "object"
+        properties:
+            study:
+                description: "The study's external identifier provided by the contributor"
+                type: "object"
+                properties:
+                    attribute:
+                        type: "string"
+                        description: "The name of the study attribute used to delete the study (i.e. kf_id)"
+                        enum:
+                            - external_id
+                            - kf_id
+                    value:
+                        type: "string"
+                        description: "The value of the study attribute used to identify which study to delete (i.e. ST_00001111)"
+                required:
+                    - attribute
+                    - value
+
+        required:
+            - study
+
+required:
+    - extract
+    - transform
+    - drop_data
