@@ -1,7 +1,6 @@
 import os
 import pandas as pd
 from numpy import NaN
-import uuid
 
 from dataservice.util.data_import.utils import (
     dropna_rows_cols,
@@ -9,12 +8,14 @@ from dataservice.util.data_import.utils import (
 )
 from dataservice.util.data_import.etl.extract import BaseExtractor
 
-DATA_DIR = os.environ.get('CHUNG_DATA_DIR')
-DBGAP_DIR = os.path.join(DATA_DIR, 'dbgap')
-MANIFESTS_DIR = os.path.join(DATA_DIR, 'manifests')
-
 
 class Extractor(BaseExtractor):
+
+    def __init__(self, config):
+        super().__init__(config)
+        self.data_dir = config['extract']['data_dir']
+        self.dbgap_dir = os.path.join(self.data_dir, 'dbgap')
+        self.manifest_dir = os.path.join(self.data_dir, 'manifests')
 
     @reformat_column_names
     @dropna_rows_cols
@@ -22,10 +23,10 @@ class Extractor(BaseExtractor):
         """
         Read in raw study files
         """
-        filepaths = [os.path.join(DBGAP_DIR, f)
-                     for f in os.listdir(DBGAP_DIR)]
-        filepaths.extend([os.path.join(MANIFESTS_DIR, f)
-                          for f in os.listdir(MANIFESTS_DIR)])
+        filepaths = [os.path.join(self.dbgap_dir, f)
+                     for f in os.listdir(self.dbgap_dir)]
+        filepaths.extend([os.path.join(self.manifest_dir, f)
+                          for f in os.listdir(self.manifest_dir)])
 
         return self.create_study_file_df(filepaths)
 
@@ -36,7 +37,7 @@ class Extractor(BaseExtractor):
         Read study data
         """
         if not filepath:
-            filepath = os.path.join(DATA_DIR,
+            filepath = os.path.join(self.data_dir,
                                     'study.txt')
         df = pd.read_csv(filepath)
 
@@ -49,7 +50,7 @@ class Extractor(BaseExtractor):
         Read investigator data
         """
         if not filepath:
-            filepath = os.path.join(DATA_DIR,
+            filepath = os.path.join(self.data_dir,
                                     'investigator.txt')
         df = pd.read_csv(filepath)
 
@@ -62,7 +63,7 @@ class Extractor(BaseExtractor):
         Read subject data file
         """
         if not filepath:
-            filepath = os.path.join(DBGAP_DIR,
+            filepath = os.path.join(self.dbgap_dir,
                                     '4a_dbGaP_SubjectDS_corrected_7-16.xlsx')
         df = pd.read_excel(filepath, dtype={'SUBJECT_ID': str})
 
@@ -89,7 +90,7 @@ class Extractor(BaseExtractor):
         """
         if not filepath:
             filepath = os.path.join(
-                DBGAP_DIR,
+                self.dbgap_dir,
                 '3a_dbGaP_SubjectAttributesDS_corrected.6.12.xlsx')
         df = pd.read_excel(filepath, dtype={'SUBJECT_ID': str})
 
@@ -106,7 +107,7 @@ class Extractor(BaseExtractor):
     def read_subject_sample_data(self, filepath=None):
         if not filepath:
             filepath = os.path.join(
-                DBGAP_DIR,
+                self.dbgap_dir,
                 '5a_dbGaP_SubjectSampleMappingDS cumulative.xlsx')
         return pd.read_excel(filepath, delimiter='\t')
 
@@ -117,7 +118,7 @@ class Extractor(BaseExtractor):
         Read demographic data from phenotype file
         """
         if not filepath:
-            filepath = os.path.join(DBGAP_DIR,
+            filepath = os.path.join(self.dbgap_dir,
                                     '2a_dbGaP_SubjectPhenotypesDS.xlsx')
         df = pd.read_excel(filepath)
         # Make all values lower case
@@ -133,7 +134,7 @@ class Extractor(BaseExtractor):
         """
         if not filepath:
             filepath = os.path.join(
-                DBGAP_DIR, '2a_dbGaP_SubjectPhenotypesDS.xlsx')
+                self.dbgap_dir, '2a_dbGaP_SubjectPhenotypesDS.xlsx')
 
         df = pd.read_excel(filepath)
         df.drop(['Ethnicity', 'Race', 'SEX', 'discharge_status', 'ISOLATED'],
@@ -172,7 +173,7 @@ class Extractor(BaseExtractor):
 
         # Add HPOs
         from dataservice.util.data_import.etl.hpo import mapper
-        hpo_mapper = mapper.HPOMapper(DATA_DIR)
+        hpo_mapper = mapper.HPOMapper(self.data_dir)
         phenotype_df = hpo_mapper.add_hpo_id_col(phenotype_df)
 
         # Add unique col
@@ -188,7 +189,7 @@ class Extractor(BaseExtractor):
         Read outcome data from phenotype file
         """
         if not filepath:
-            filepath = os.path.join(DBGAP_DIR,
+            filepath = os.path.join(self.dbgap_dir,
                                     '2a_dbGaP_SubjectPhenotypesDS.xlsx')
         df = pd.read_excel(filepath)
 
@@ -216,7 +217,7 @@ class Extractor(BaseExtractor):
         Read pedigree data
         """
         if not filepath:
-            filepath = os.path.join(DBGAP_DIR,
+            filepath = os.path.join(self.dbgap_dir,
                                     '6a_dbGaP_PedigreeDS_corrected.6.12.xlsx')
         df = pd.read_excel(filepath)
         del df['SEX']
@@ -230,7 +231,7 @@ class Extractor(BaseExtractor):
         Read and combine all sample manifest sheets
         """
         if not manifest_dir:
-            manifest_dir = MANIFESTS_DIR
+            manifest_dir = self.manifest_dir
 
         # Sample manifests
         # Combine all sample manifest sheets
@@ -297,7 +298,7 @@ class Extractor(BaseExtractor):
         Read genomic file manifest (ties subjects to genomic files)
         """
         if not filepath:
-            filepath = os.path.join(DATA_DIR, 'sample.txt')
+            filepath = os.path.join(self.data_dir, 'sample.txt')
 
         df = pd.read_csv(filepath, delimiter='\t')
         return df[['entity:sample_id', 'aligned_reads', 'crai_or_bai_path',
@@ -311,7 +312,8 @@ class Extractor(BaseExtractor):
         Read genomic file info
         """
         if not filepath:
-            filepath = os.path.join(DATA_DIR, 'genomic_files_by_uuid.json')
+            filepath = os.path.join(self.data_dir,
+                                    'genomic_files_by_uuid.json')
         df = super(Extractor, self).read_genomic_files_info(filepath)
 
         df['subject_id'] = df['file_name'].apply(
