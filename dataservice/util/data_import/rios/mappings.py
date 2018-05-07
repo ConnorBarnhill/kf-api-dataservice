@@ -44,6 +44,7 @@ COL_TYPE = "$col_type"
 
 mappings_dict = {
     "study": {
+        'kf_id': {COL_VALUE: 'SD_VMK01DZK'},
         'data_access_authority': {COL_NAME: 'data_access_authority'},
         'external_id': {COL_NAME: 'study_id'},
         'version': {COL_NAME: 'study_version'},
