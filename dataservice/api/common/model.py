@@ -78,6 +78,7 @@ class IndexdFile:
     urls = []
     rev = None
     hashes = {}
+    acl = []
     # The metadata property is already used by sqlalchemy
     _metadata = {}
     size = None
@@ -150,6 +151,7 @@ class TimestampMixin:
     created_at = db.Column(db.DateTime(), default=datetime.now,
                            doc="Time of object creation")
     modified_at = db.Column(db.DateTime(), default=datetime.now,
+                            onupdate=datetime.now,
                             doc="Time of last modification")
 
 

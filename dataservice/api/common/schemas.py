@@ -1,14 +1,17 @@
+import re
 from dataservice.extensions import ma
 from marshmallow import (
     fields,
     post_dump,
     pre_dump,
     validates_schema,
+    validates,
     ValidationError
 )
 from flask import url_for, request
-from dataservice.api.common.pagination import Pagination
 from flask_marshmallow import Schema
+from dataservice.api.common.pagination import Pagination
+from dataservice.extensions import db
 
 
 class BaseSchema(ma.ModelSchema):
@@ -18,6 +21,9 @@ class BaseSchema(ma.ModelSchema):
     def __init__(self, code=200, message='success', *args, **kwargs):
         self.status_code = code
         self.status_message = message
+        # Add the request's db session to serializer if one is not specified
+        if 'session' not in kwargs:
+            kwargs['session'] = db.session
         super(BaseSchema, self).__init__(*args, **kwargs)
 
     class Meta:
@@ -30,6 +36,14 @@ class BaseSchema(ma.ModelSchema):
             self.__pagination__ = data
             return data.items
         return data
+
+    @validates('kf_id')
+    def valid(self, value):
+        prefix = self.Meta.model.__prefix__
+        r = r'^'+prefix+r'_[A-HJ-KM-NP-TV-Z0-9]{8}'
+        m = re.search(r, value)
+        if not m:
+            raise ValidationError('Invalid kf_id')
 
     @post_dump(pass_many=True)
     def wrap_envelope(self, data, many):
@@ -74,6 +88,8 @@ class BaseSchema(ma.ModelSchema):
 
     @validates_schema(pass_original=True)
     def check_unknown_fields(self, data, original_data):
+        if data is None:
+            return
         unknown = set(original_data) - set(self.fields)
         if unknown:
             raise ValidationError('Unknown field', unknown)
@@ -81,6 +97,7 @@ class BaseSchema(ma.ModelSchema):
 
 class IndexdFileSchema(Schema):
     urls = ma.List(ma.Str(), required=True)
+    acl = ma.List(ma.Str(), required=False)
     file_name = ma.Str()
     hashes = ma.Dict(required=True)
     metadata = ma.Dict(attribute='_metadata')
@@ -132,6 +149,10 @@ class StatusSchema(Schema):
     tags = fields.List(
         fields.String(description='Any tags associated with the version',
                       example=['rc', 'beta']))
+    datamodel = fields.Str(description='The datamodel version',
+                           example='1.0.0')
+    migration = fields.Str(description='The datamodel revision',
+                           example='cdefcd75e417')
 
     @post_dump(pass_many=False)
     def wrap_envelope(self, data):
