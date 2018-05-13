@@ -1,4 +1,7 @@
-from dataservice.util.data_import.etl.defaults import DEFAULT_ENTITY_TYPES
+from dataservice.util.data_import.config import (
+    DEFAULT_ENTITY_TYPES,
+    IMPORT_DATA_OP
+)
 
 
 class BaseETLModule(object):
@@ -26,7 +29,7 @@ class BaseETLModule(object):
         cls = getattr(mod, cls_name)
         return cls(self.config)
 
-    def run(self):
+    def run(self, operation=IMPORT_DATA_OP):
         """
         Run extract, transfrom, load modules for a particular dataset
         """
@@ -49,7 +52,8 @@ class BaseETLModule(object):
         # Load into db via sqlalchemy
         if content:
             print('Begin loading ...')
-            self.loader.run(content, entity_types=entity_types)
+            self.loader.run(content, entity_types=entity_types,
+                            operation=operation)
             print('Completed loading\n')
 
     def drop_data(self):

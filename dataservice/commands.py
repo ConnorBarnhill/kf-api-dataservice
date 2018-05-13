@@ -32,13 +32,29 @@ def erd():
 @click.argument('config_file', type=click.Path(), required=False)
 def import_data(etl_module_name, config_file):
     """
-    ETL real data to database
+    ETL real data to database via creating new objects
 
     Arg: etl_module_name is the name of the python module to run in the
     dataservice.util.data_import package. Example: 'seidman'
     """
     from dataservice.util.data_import import main
-    main.run(etl_module_name, config_file)
+    from dataservice.util.data_import.config import IMPORT_DATA_OP
+    main.run(IMPORT_DATA_OP, etl_module_name, config_file)
+
+
+@click.command()
+@click.argument('etl_module_name')
+@click.argument('config_file', type=click.Path(), required=False)
+def update_data(etl_module_name, config_file):
+    """
+    ETL real data to database via updating existing objects
+
+    Arg: etl_module_name is the name of the python module to run in the
+    dataservice.util.data_import package. Example: 'seidman'
+    """
+    from dataservice.util.data_import import main
+    from dataservice.util.data_import.config import UPDATE_DATA_OP
+    main.run(UPDATE_DATA_OP, etl_module_name, config_file)
 
 
 @click.command()
