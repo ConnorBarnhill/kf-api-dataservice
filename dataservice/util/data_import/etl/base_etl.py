@@ -24,7 +24,7 @@ class BaseETLModule(object):
         """
         from importlib import import_module
         prefix_path = 'dataservice.util.data_import.etl'
-        module_path = "{}.{}".format(prefix_path, module_name)
+        module_path = "{0}.{1}.{1}".format(prefix_path, module_name)
         mod = import_module(module_path)
         cls = getattr(mod, cls_name)
         return cls(self.config)

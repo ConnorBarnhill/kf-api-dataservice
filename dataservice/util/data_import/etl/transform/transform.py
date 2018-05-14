@@ -2,7 +2,7 @@ import importlib.util
 import os
 from pandas import DataFrame
 
-from dataservice.util.data_import.etl.mapper import Mapper
+from dataservice.util.data_import.etl.transform.mapper import Mapper
 
 
 class BaseTransformer(object):

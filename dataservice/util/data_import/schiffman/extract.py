@@ -6,7 +6,7 @@ from dataservice.util.data_import.utils import (
     dropna_rows_cols,
     cols_to_lower
 )
-from dataservice.util.data_import.etl.extract import BaseExtractor
+from dataservice.util.data_import.etl.extract.extract import BaseExtractor
 
 
 class Extractor(BaseExtractor):

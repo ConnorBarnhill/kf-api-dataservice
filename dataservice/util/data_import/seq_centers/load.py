@@ -1,4 +1,4 @@
-from dataservice.util.data_import.etl.load import BaseLoader
+from dataservice.util.data_import.etl.load.load import BaseLoader
 
 
 class Loader(BaseLoader):

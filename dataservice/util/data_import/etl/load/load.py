@@ -331,10 +331,7 @@ class BaseLoader(object):
         """
         Read file containing cache of kf_ids for objects already created
         """
-        root_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-        etl_package_name = self.config[ETL_PACKAGE_NAME_KEY]
-        filepath = os.path.join(root_dir, etl_package_name,
-                                KF_ID_CACHE_FNAME)
+        filepath = self._get_kf_id_cache_path()
         if os.path.isfile(filepath):
             self.kf_id_cache = read_json(filepath)
 
@@ -342,15 +339,22 @@ class BaseLoader(object):
         """
         Write file containing cache of kf_ids for objects created
         """
-        root_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-        etl_package_name = self.config[ETL_PACKAGE_NAME_KEY]
-        filepath = os.path.join(root_dir, etl_package_name,
-                                KF_ID_CACHE_FNAME)
+        filepath = self._get_kf_id_cache_path()
 
         write_json(self.kf_id_cache, filepath)
 
+    def _get_kf_id_cache_path(self):
+        root_dir = os.path.abspath(
+            os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+        etl_package_name = self.config[ETL_PACKAGE_NAME_KEY]
+        filepath = os.path.join(root_dir, etl_package_name,
+                                KF_ID_CACHE_FNAME)
+        return filepath
+
     def _import_model_cls(self, entity_type):
-        # Dynamically import entity model class
+        """
+        Dynamically import entity model class
+        """
         model_name = to_camel_case(entity_type)
         model_module_path = 'dataservice.api.{}.models'.format(
             entity_type)
