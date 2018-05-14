@@ -8,6 +8,7 @@ transform:
   mappings_file: '/Users/singhn4/backup-kf-api-dataservice/dataservice/util/data_import/seq_centers/mappings.py'
 
 load:
+    use: load
 
 drop_data:
     study:

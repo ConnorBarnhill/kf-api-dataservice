@@ -9,11 +9,10 @@ class BaseETLModule(object):
     def __init__(self, config, extractor=None, transformer=None, loader=None):
         self.config = config
         self.extractor = extractor or self.create_default(
-            'extract', 'BaseExtractor')
+            'extract.extract', 'BaseExtractor')
         self.transformer = transformer or self.create_default(
-            'transform', 'BaseTransformer')
-        self.loader = loader or transformer or self.create_default(
-            'load', 'BaseLoader')
+            'transform.transform', 'BaseTransformer')
+        self.loader = loader or self.create_loader()
 
     def create_default(self, module_name, cls_name):
         """
@@ -24,10 +23,15 @@ class BaseETLModule(object):
         """
         from importlib import import_module
         prefix_path = 'dataservice.util.data_import.etl'
-        module_path = "{0}.{1}.{1}".format(prefix_path, module_name)
+        module_path = "{0}.{1}".format(prefix_path, module_name)
         mod = import_module(module_path)
         cls = getattr(mod, cls_name)
         return cls(self.config)
+
+    def create_loader(self):
+        module_name = self.config['load']['use']
+        module_name = '{}.{}'.format('load', module_name)
+        return self.create_default(module_name, 'Loader')
 
     def run(self, operation=IMPORT_DATA_OP):
         """

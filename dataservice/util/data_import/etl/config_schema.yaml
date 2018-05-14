@@ -23,6 +23,15 @@ properties:
                 type: "string"
         required:
             - mappings_file
+    load:
+        description: "Load module configuration parameters"
+        type: "object"
+        properties:
+            use:
+                description: "The name of the load module to use."
+                type: "string"
+        required:
+            - use
     drop_data:
         description: "Parameters required to drop all data associated with this study"
         type: "object"
@@ -50,4 +59,5 @@ properties:
 required:
     - extract
     - transform
+    - load
     - drop_data

@@ -19,6 +19,7 @@ transform:
   mappings_file: '/Users/singhn4/backup-kf-api-dataservice/dataservice/util/data_import/schiffman/mappings.py'
 
 load:
+    use: db_load
 
 drop_data:
     study:

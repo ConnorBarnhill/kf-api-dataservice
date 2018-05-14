@@ -70,7 +70,8 @@ def _init(etl_package_name, config_file):
     etl_module = _load_etl_module_cls(etl_package_name)
 
     # Add module name
-    config[ETL_PACKAGE_NAME_KEY] = etl_package_name
+    if config:
+        config[ETL_PACKAGE_NAME_KEY] = etl_package_name
 
     return config, etl_module
 

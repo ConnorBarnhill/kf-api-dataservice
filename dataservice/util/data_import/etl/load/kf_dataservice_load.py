@@ -19,7 +19,7 @@ ENTITY_ENDPOINT_MAP = {
 }
 
 
-class KfDataserviceLoader(object):
+class Loader(object):
 
     def __init__(self, config):
         self.config = config

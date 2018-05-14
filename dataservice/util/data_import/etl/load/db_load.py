@@ -20,7 +20,7 @@ from dataservice.util.data_import.config import (
 from dataservice.api.family_relationship.models import FamilyRelationship
 
 
-class BaseLoader(object):
+class Loader(object):
 
     def __init__(self, config, config_name=None):
         self.config = config
