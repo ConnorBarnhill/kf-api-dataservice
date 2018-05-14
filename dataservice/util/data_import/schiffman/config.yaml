@@ -24,4 +24,4 @@ load:
 drop_data:
     study:
         attribute: external_id
-        value: 'phs001194'
+        value: 'phs001228'

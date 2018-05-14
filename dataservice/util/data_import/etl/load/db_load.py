@@ -48,6 +48,9 @@ class Loader(BaseLoader):
         from dataservice.api.investigator.models import Investigator
 
         studies = Study.query.filter_by(**kwargs).all()
+        print('Found {} studies matching params {}'
+              .format(len(studies), kwargs))
+
         for study in studies:
             investigator_id = study.investigator_id
 
