@@ -20,7 +20,6 @@ transform:
 
 load:
     use: db_load
-    db_load:
     kf_dataservice_load:
         base_url: 'http://localhost:5000'
 drop_data:

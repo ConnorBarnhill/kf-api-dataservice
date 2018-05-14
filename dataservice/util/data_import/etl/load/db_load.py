@@ -1,33 +1,28 @@
 import os
 from importlib import import_module
-from pprint import pprint
 
 from sqlalchemy.exc import IntegrityError
 
 from dataservice.extensions import db
 from dataservice import create_app
 from dataservice.util.data_import.utils import (
-    to_camel_case,
-    read_json,
-    write_json
+    to_camel_case
 )
 from dataservice.util.data_import.config import (
-    ETL_PACKAGE_NAME_KEY,
-    KF_ID_CACHE_FNAME,
     IMPORT_DATA_OP,
     UPDATE_DATA_OP
 )
+from dataservice.util.data_import.etl.load.base_load import BaseLoader
 from dataservice.api.family_relationship.models import FamilyRelationship
 
 
-class Loader(object):
+class Loader(BaseLoader):
 
     def __init__(self, config, config_name=None):
-        self.config = config
+        super().__init__(config)
         if not config_name:
             config_name = os.environ.get('FLASK_CONFIG', 'default')
         self.setup(config_name)
-        self.kf_id_cache = {}
 
     def setup(self, config_name):
         """
@@ -86,8 +81,9 @@ class Loader(object):
             model_cls = self._import_model_cls(entity_type)
 
             # Create all entity objects and save to db
-            _ids, entities_to_load = self._build_entities(model_cls,
-                                                          entity_dict)
+            _ids, entities_to_load = self._build_entities(
+                model_cls.__tablename__,
+                entity_dict)
             if not entities_to_load:
                 continue
 
@@ -100,7 +96,7 @@ class Loader(object):
 
         if 'family_relationship' in entity_types:
             _ids_fr, entities_to_load_fr = self._build_family_relationships(
-                entity_dict)
+                entity_dict.get('family_relationship'))
 
             if not entities_to_load_fr:
                 return
@@ -183,137 +179,8 @@ class Loader(object):
 
         self._db_commit(count, entity_type)
 
-    def _build_entities(self, model_cls, entity_dict):
-        """
-        Build entity payloads of a particular entity_type to db
-        """
-        # Get entity type from model class name
-        entity_type = model_cls.__tablename__
-
-        print('\nLoading {}s ...'.format(entity_type))
-
-        # For all entities of entity_type
-        entities_to_load = entity_dict.get(entity_type)
-        if not entities_to_load:
-            print('\nExpected to load {0} but 0 {0}s were found to load.\n'.
-                  format(entity_type))
-            return (None, None)
-
-        _ids = []
-        for i, params in enumerate(entities_to_load):
-            # Save ids
-            _ids.append(params['_unique_id_val'])
-
-            # Add foreign keys
-            self._build_links(entity_type, params)
-            if params:
-                # Remove the private keys which were only needed for linking
-                self._remove_extra_keys(params)
-
-        return _ids, entities_to_load
-
-    def _build_links(self, entity_type, params):
-        """
-        Add foreign keys to input params if this entity is linked to any others
-        """
-        linked_entities = params.get('_links')
-        if linked_entities:
-            for linked_entity, _params in linked_entities.items():
-                if not (_params.get('source_fk_col') and
-                        _params.get('target_fk_col')):
-                    print('Error loading {0}. Missing foreign key info.'
-                          ' Check mappings for {0}'.format(entity_type))
-                    continue
-                source_fk_val = str(_params['source_fk_col'])
-                target_fk_col = _params['target_fk_col']
-                try:
-                    target_fk_value = self.kf_id_cache[
-                        linked_entity][source_fk_val]
-                except KeyError as e:
-                    pprint('Error loading {}, linked entity {} not found'
-                           .format(params, source_fk_val))
-                    params = None
-                    continue
-                if params:
-                    params[target_fk_col] = target_fk_value
-
-            if params:
-                params.pop('_links', None)
-
     def _create_all_fr(self, _ids, entities_params):
         self._create_all(FamilyRelationship, _ids, entities_params)
-
-    def _build_family_relationships(self, entity_dict, relation_keys=None):
-        """
-        Create and save family relationships for a proband
-        Relationships are: mother - proband and father - proband
-        """
-        print('\nLoading {}s ...'.format('family_relationship'))
-
-        entities_to_load = entity_dict.get('family_relationship')
-        if not entities_to_load:
-            print('\nExpected to load {0} but 0 {0}s were found to load.\n'.
-                  format('family_relationship'))
-            return (None, None)
-
-        if not relation_keys:
-            relation_keys = ['mother', 'father']
-
-        entities = []
-        _ids = []
-        for family_rel in entities_to_load:
-            for r in relation_keys:
-                params = self._build_family_relationship(r, family_rel)
-                if params:
-                    entities.append(params)
-                    _ids.append('{}'.format(
-                        '_'.join(list(params.values()))))
-        return _ids, entities
-
-    def _build_family_relationship(self, relation_key, family_rel):
-        """
-        Create a family relationship
-        """
-        params = {}
-        if family_rel.get(relation_key) and family_rel.get('proband'):
-            p_id = self._get_kf_id(
-                'participant', family_rel[relation_key])
-            r_id = self._get_kf_id(
-                'participant', family_rel['proband'])
-            if p_id and r_id:
-                params = {'participant_id': p_id,
-                          'relative_id': r_id,
-                          'participant_to_relative_relation': relation_key}
-        return params
-
-    def _get_kf_id(self, entity_type, key):
-        return self.kf_id_cache[entity_type].get(str(key))
-
-    def _save_kf_ids(self, _ids, entity_type, entities):
-        """
-        Add to entity id map which maps original unique id in entity table
-        to kf_id
-        """
-        # Save kf ids
-        if self.kf_id_cache.get(entity_type) is None:
-            self.kf_id_cache[entity_type] = {}
-
-        for i, entity_obj in enumerate(entities):
-            self.kf_id_cache[entity_type][str(_ids[i])] = entity_obj.kf_id
-
-        # Write to file
-        self._write_kf_id_cache()
-
-    def _remove_extra_keys(self, params):
-        """
-        Remove private keys from kwargs dict.
-
-        Private keys were only needed for linking entities and should
-        not stay in the model's kwargs (params)
-        """
-        keys = ['_unique_id_val', '_unique_id_col', '_links']
-        for k in keys:
-            params.pop(k, None)
 
     def _db_commit(self, count, entity_type):
         """
@@ -326,30 +193,6 @@ class Loader(object):
             print('Failed loading of {}'.format(entity_type))
             print(e)
             db.session.rollback()
-
-    def _load_kf_id_cache(self):
-        """
-        Read file containing cache of kf_ids for objects already created
-        """
-        filepath = self._get_kf_id_cache_path()
-        if os.path.isfile(filepath):
-            self.kf_id_cache = read_json(filepath)
-
-    def _write_kf_id_cache(self):
-        """
-        Write file containing cache of kf_ids for objects created
-        """
-        filepath = self._get_kf_id_cache_path()
-
-        write_json(self.kf_id_cache, filepath)
-
-    def _get_kf_id_cache_path(self):
-        root_dir = os.path.abspath(
-            os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-        etl_package_name = self.config[ETL_PACKAGE_NAME_KEY]
-        filepath = os.path.join(root_dir, etl_package_name,
-                                KF_ID_CACHE_FNAME)
-        return filepath
 
     def _import_model_cls(self, entity_type):
         """

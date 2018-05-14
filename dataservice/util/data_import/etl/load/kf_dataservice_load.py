@@ -1,3 +1,6 @@
+import sys
+import json
+import requests
 
 ENTITY_ENDPOINT_MAP = {
     'study': '/studies',
@@ -26,11 +29,22 @@ class Loader(object):
         self.setup()
 
     def setup(self):
-        web_config = self.config.get('load').get('web')
+        load_config = self.config['load']
+        load_module_name = load_config['use']
+        if load_module_name not in load_config:
+            print('Aborting! Could not find load parameters for {} in config'
+                  .format(load_module_name))
+            sys.exit()
+        web_config = load_config[load_module_name]
         self.base_url = web_config.get('base_url')
+        if not self.base_url:
+            print('Aborting! No base url specified in {} config'
+                  .format(load_module_name))
+            sys.exit()
 
     def _check_status(self):
         pass
 
     def run(self, entity_dict, **kwargs):
+        print('In run')
         pass
