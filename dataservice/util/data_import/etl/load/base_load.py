@@ -51,7 +51,8 @@ class BaseLoader(object):
         """
         # Get required foreign keys
         required = set(self.schemas[entity_type]['required']
-                       if 'required' in self.schemas[entity_type] else [])
+                       if (self.schemas and
+                           'required' in self.schemas[entity_type]) else [])
 
         linked_entities = params.get('_links')
         if linked_entities:
@@ -147,6 +148,12 @@ class BaseLoader(object):
 
         # Write to file
         self._write_kf_id_cache()
+
+    def _update_kf_id(self, _id, kf_id, entity_type):
+        if self.kf_id_cache.get(entity_type) is None:
+            self.kf_id_cache[entity_type] = {}
+
+        self.kf_id_cache[entity_type][str(_id)] = kf_id
 
     def _remove_extra_keys(self, params):
         """

@@ -8,9 +8,10 @@ transform:
   mappings_file: '/Users/singhn4/backup-kf-api-dataservice/dataservice/util/data_import/seq_centers/mappings.py'
 
 load:
-    use: load
+    # use: db_load
+    use: kf_dataservice_load
+    kf_dataservice_load:
+        base_url: 'http://localhost:5000'
 
 drop_data:
-    study:
-        attribute: 'external_id'
-        value: ''
+    study: ''
