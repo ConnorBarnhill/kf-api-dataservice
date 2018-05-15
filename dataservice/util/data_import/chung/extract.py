@@ -168,7 +168,7 @@ class Extractor(BaseExtractor):
 
         # Set observed
         phenotype_df['observed'] = phenotype_df['value'].apply(
-            lambda x: 'positive' if x != 'no' else 'negative')
+            lambda x: 'Positive' if x != 'no' else 'Negative')
         del phenotype_df['value']
 
         # Add HPOs
@@ -200,8 +200,8 @@ class Extractor(BaseExtractor):
         # Map discharge status
         # 1=Alive 4=Deceased 0=Fetal sample 8=unknown NA=Not applicable
         def func(row):
-            _map = {0: 'alive', 1: 'deceased', 4: 'fetal sample', 8: 'unknown'}
-            return _map.get(int(row['discharge_status']), 'not applicable')
+            _map = {0: 'Alive', 1: 'Dead', 4: 'Alive', 8: 'Reported Unknown'}
+            return _map.get(int(row['discharge_status']), 'Not Reported')
         df['discharge_status'] = df.apply(func, axis=1)
 
         # Add unique col
@@ -219,7 +219,7 @@ class Extractor(BaseExtractor):
         if not filepath:
             filepath = os.path.join(self.dbgap_dir,
                                     '6a_dbGaP_PedigreeDS_corrected.6.12.xlsx')
-        df = pd.read_excel(filepath)
+        df = pd.read_excel(filepath, dtype={'Family_id': str})
         del df['SEX']
 
         return df

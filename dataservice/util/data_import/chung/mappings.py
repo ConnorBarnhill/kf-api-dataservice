@@ -89,12 +89,21 @@ mappings_dict = {
         "external_id": {COL_NAME: "subject_id"},
         "is_proband": {COL_NAME: "is_proband"},
         "consent_type": {COL_NAME: "consent"},
-        "ethnicity": {COL_NAME: "ethnicity"},
+        "ethnicity": {COL_NAME: "ethnicity",
+                      COL_VALUE: {"non-hispanic": "Not Hispanic or Latino",
+                                  "hispanic": "Hispanic or Latino",
+                                  'unknown': 'Reported Unknown'}},
         "gender": {COL_NAME: "sex",
-                   COL_VALUE: {"F": "female",
-                               "M": "male"}},
+                   COL_VALUE: {"F": "Female",
+                               "M": "Male",
+                               'U': "Reported Unknown"}},
         "race": {COL_NAME: "race",
-                 COL_VALUE: {"mulitiple_races": "other"}},
+                 COL_VALUE: {
+                     "white": "White",
+                     "black": "Black or African American",
+                     "asian": "Asian",
+                     "unknown": "Reported Unknown",
+                     "multiple_races": "Other"}},
         "_unique_id_col": {COL_VALUE: "subject_id"},
         "_links": {
             'family': {
@@ -110,11 +119,18 @@ mappings_dict = {
     "family_relationship": {
         "external_id": None,
         "proband": {COL_NAME: "subject_id"},
-        "mother": {COL_NAME: "mother"},
-        "father": {COL_NAME: "father"},
+        "mother": {COL_NAME: "mother",
+                   COL_VALUE: {
+                       "mother": "Mother",
+                   }},
+        "father": {COL_NAME: "father",
+                   COL_VALUE: {
+                       "father": "Father",
+                   }},
         "_unique_id_col": {COL_VALUE: "subject_id"}
     },
     "phenotype": {
+        "external_id": None,
         "age_at_event_days": None,
         "source_text_phenotype": {COL_NAME: "phenotype"},
         "hpo_id_phenotype": {COL_NAME: "hpo_id"},
@@ -142,6 +158,7 @@ mappings_dict = {
         "_unique_id_col": {COL_VALUE: "outcome_id"}
     },
     "diagnosis": {
+        "external_id": None,
         "age_at_event_days": None,
         "source_text_diagnosis": {COL_NAME: "phenotype"},
         "source_text_tumor_location": None,
@@ -150,7 +167,7 @@ mappings_dict = {
         "uberon_id_tumor_location": None,
         "ncit_id_diagnosis": None,
         "spatial_descriptor": None,
-        "diagnosis_category": {COL_VALUE: 'structural birth defect'},
+        "diagnosis_category": {COL_VALUE: 'Structural Birth Defect'},
         "_links": {
             'participant': {
                 'target_fk_col': {COL_VALUE: 'participant_id'},
@@ -205,7 +222,7 @@ mappings_dict = {
     },
     "genomic_file": {
         "external_id": None,
-        "availability": None,
+        "availability": {COL_VALUE: 'Immediate Download'},
         "latest_did": {COL_NAME: "latest_did"},
         "file_name": {COL_NAME: "file_name"},
         "size": {COL_NAME: "size"},
