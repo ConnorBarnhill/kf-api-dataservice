@@ -62,7 +62,7 @@ class Extractor(BaseExtractor):
             filepath = os.path.join(self.data_dir,
                                     'Schiffman_X01 Sample List.xlsx')
 
-        df = pd.read_excel(filepath)
+        df = pd.read_excel(filepath, dtype={'Ewing Trio Number': str})
 
         return df
 
@@ -131,7 +131,7 @@ class Extractor(BaseExtractor):
         """
         diagnosis_df['phenotype'] = "Ewing's Sarcoma"
         diagnosis_df['hpo_id'] = "HP:0012254"
-        _map = {True: 'positive', False: 'negative'}
+        _map = {True: 'Positive', False: 'Negative'}
         diagnosis_df['observed'] = (pd.notnull(diagnosis_df['morphology']).
                                     apply(lambda has_morph: _map[has_morph]))
 

@@ -88,11 +88,9 @@ mappings_dict = {
     "participant": {
         "external_id": {COL_NAME: "individual_name"},
         "is_proband": {COL_NAME: "relationship_to_proband"},
-        "ethnicity": "unknown",
-        "gender": {COL_NAME: "gender",
-                   COL_VALUE: {"Female": "female",
-                               "Male": "male"}},
-        "race": "unknown",
+        "ethnicity": None,
+        "gender": {COL_NAME: "gender"},
+        "race": None,
         "_unique_id_col": {COL_VALUE: "individual_name"},
         "_links": {
             'family': {
@@ -107,8 +105,14 @@ mappings_dict = {
     },
     "family_relationship": {
         "external_id": None,
-        "mother": {COL_NAME: "Mother"},
-        "father": {COL_NAME: "Father"},
+        "mother": {COL_NAME: "Mother",
+                   COL_VALUE: {
+                       "mother": "Mother",
+                   }},
+        "father": {COL_NAME: "Father",
+                   COL_VALUE: {
+                       "father": "Father",
+                   }},
         "proband": {COL_NAME: "Self/Case"},
         "_unique_id_col": {COL_VALUE: "rel_id"}
     },
@@ -129,7 +133,7 @@ mappings_dict = {
     "outcome": {
         "age_at_event_days": None,
         "external_id": None,
-        "vital_status": {COL_NAME: "discharge_status"},
+        "vital_status": None,
         "disease_related": None,
         "_links": {
             'participant': {
@@ -148,7 +152,7 @@ mappings_dict = {
         "uberon_id_tumor_location": None,
         "ncit_id_diagnosis": None,
         "spatial_descriptor": None,
-        "diagnosis_category": {COL_VALUE: 'cancer'},
+        "diagnosis_category": {COL_VALUE: 'Cancer'},
         "_links": {
             'participant': {
                 'target_fk_col': {COL_VALUE: 'participant_id'},
