@@ -90,15 +90,21 @@ mappings_dict = {
         "is_proband": {COL_NAME: "is_proband"},
         "_unique_id_col": {COL_VALUE: "subjid"},
         "ethnicity": {COL_NAME: "ethnicity",
-                      COL_VALUE: {"Yes": "hispanic or latino",
-                                  "No": "not hispanic or latino"}},
+                      COL_VALUE: {"Yes": "Hispanic or Latino",
+                                  "No": "Not Hispanic or Latino",
+                                  "Unknown": "Reported Unknown"}},
 
         "gender": {COL_NAME: "sex",
-                   COL_VALUE: {"F": "female",
-                               "M": "male"}},
+                   COL_VALUE: {"F": "Female",
+                               "M": "Male"}},
 
         "race": {COL_NAME: "race",
-                 COL_VALUE: {"More than one race": "other"}},
+                 COL_VALUE: {"More than one race": "Other",
+                             "Unknown": "Reported Unknown",
+                             "American Indian or Alaskan Native":
+                             "American Indian or Alaska Native",
+                             "Native Hawaiian or other Pacific Islander":
+                             "Native Hawaiian or Other Pacific Islander"}},
         "_links": {
             'family': {
                 'target_fk_col': {COL_VALUE: 'family_id'},
@@ -122,7 +128,11 @@ mappings_dict = {
         "source_text_phenotype": {COL_NAME: "phenotype"},
         "hpo_id_phenotype": {COL_NAME: "hpo_id"},
         "snomed_id_phenotype": None,
-        "observed": {COL_NAME: "observed"},
+        "observed": {COL_NAME: "observed",
+                     COL_VALUE: {
+                         "negative": "Negative",
+                         "positive": "Positive"
+                     }},
         "_links": {
             'participant': {
                 'target_fk_col': {COL_VALUE: 'participant_id'},
@@ -153,7 +163,7 @@ mappings_dict = {
         "uberon_id_tumor_location": None,
         "ncit_id_diagnosis": None,
         "spatial_descriptor": None,
-        "diagnosis_category": {COL_VALUE: 'structural birth defect'},
+        "diagnosis_category": {COL_VALUE: 'Structural Birth Defect'},
         "_links": {
             'participant': {
                 'target_fk_col': {COL_VALUE: 'participant_id'},

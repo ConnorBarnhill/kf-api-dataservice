@@ -65,7 +65,8 @@ class Extractor(BaseExtractor):
                                     '7a_dbGaP_PedigreeDS.txt')
         df = pd.read_csv(filepath,
                          delimiter='\t',
-                         dtype={'SUBJID': str})
+                         dtype={'SUBJID': str,
+                                'FAMID': str})
         # Subset of columns
         df.drop(['SEX'], axis=1, inplace=True)
 
@@ -126,7 +127,7 @@ class Extractor(BaseExtractor):
 
         # Map to positive/negative
         def func(row):
-            return 'negative' if row['observed'] == 'no' else 'positive'
+            return 'Negative' if row['observed'] == 'no' else 'Positive'
         phenotype_df['observed'] = phenotype_df.apply(func, axis=1)
 
         # Merge back in age at event in days
@@ -460,6 +461,7 @@ class Extractor(BaseExtractor):
             'sequencing_experiment': seq_exp_df,
             'default': participant_df
         }
+
         return entity_dfs
 
     def _add_study_cols(self, study_df, df):
