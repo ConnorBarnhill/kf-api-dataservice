@@ -1,5 +1,5 @@
-import importlib.util
 import os
+import importlib.util
 from pandas import DataFrame
 
 from dataservice.util.data_import.etl.transform.mapper import Mapper
@@ -7,10 +7,13 @@ from dataservice.util.data_import.etl.transform.mapper import Mapper
 
 class BaseTransformer(object):
 
-    def __init__(self, config):
+    def __init__(self, config, **kwargs):
         self.config = config
         mappings = self.import_mappings(config)
-        self.mapper = Mapper(mappings) if mappings else None
+        mapper = Mapper(mappings,
+                        schemas=kwargs.get('schemas'),
+                        validate_on=kwargs.get('validate_on'))
+        self.mapper = mapper if mappings else None
 
     def import_mappings(self, config):
         """

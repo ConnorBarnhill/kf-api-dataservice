@@ -13,8 +13,9 @@ from dataservice.util.data_import.config import (
 
 class BaseLoader(object):
 
-    def __init__(self, config):
+    def __init__(self, config, **kwargs):
         self.config = config
+        self.schemas = kwargs.get('schemas')
         self.kf_id_cache = {}
 
     def _build_entities(self, entity_type, entity_dict):
@@ -48,9 +49,14 @@ class BaseLoader(object):
         """
         Add foreign keys to input params if this entity is linked to any others
         """
+        # Get required foreign keys
+        required = set(self.schemas[entity_type]['required']
+                       if 'required' in self.schemas[entity_type] else [])
+
         linked_entities = params.get('_links')
         if linked_entities:
             for linked_entity, _params in linked_entities.items():
+                # The required keys don't exist in mapping
                 if not (_params.get('source_fk_col') and
                         _params.get('target_fk_col')):
                     print('Error loading {0}. Missing foreign key info.'
@@ -58,14 +64,23 @@ class BaseLoader(object):
                     continue
                 source_fk_val = str(_params['source_fk_col'])
                 target_fk_col = _params['target_fk_col']
+
+                # A required linked/foreign entity is not found
                 try:
                     target_fk_value = self.kf_id_cache[
                         linked_entity][source_fk_val]
                 except KeyError as e:
-                    pprint('Error loading {}, linked entity {} not found'
-                           .format(params, source_fk_val))
-                    params = None
-                    continue
+                    # Foreign key not required
+                    if target_fk_col not in required:
+                        target_fk_value = None
+                    # Foreign key is required but no corresponding external id
+                    # found in source data
+                    else:
+                        pprint('Error loading {}, required foreign entity {} '
+                               'not found'.format(params['_unique_id_col'],
+                                                  source_fk_val))
+                        params = None
+                        continue
                 if params:
                     params[target_fk_col] = target_fk_value
 
@@ -118,7 +133,7 @@ class BaseLoader(object):
     def _get_kf_id(self, entity_type, key):
         return self.kf_id_cache[entity_type].get(str(key))
 
-    def _save_kf_ids(self, _ids, entity_type, entities):
+    def _save_kf_ids(self, _ids, kf_ids, entity_type):
         """
         Add to entity id map which maps original unique id in entity table
         to kf_id
@@ -127,8 +142,8 @@ class BaseLoader(object):
         if self.kf_id_cache.get(entity_type) is None:
             self.kf_id_cache[entity_type] = {}
 
-        for i, entity_obj in enumerate(entities):
-            self.kf_id_cache[entity_type][str(_ids[i])] = entity_obj.kf_id
+        for i, kf_id in enumerate(kf_ids):
+            self.kf_id_cache[entity_type][str(_ids[i])] = kf_id
 
         # Write to file
         self._write_kf_id_cache()

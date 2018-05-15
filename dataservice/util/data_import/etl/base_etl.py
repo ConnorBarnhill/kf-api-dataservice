@@ -1,6 +1,10 @@
+import sys
+import requests
 from dataservice.util.data_import.config import (
     DEFAULT_ENTITY_TYPES,
-    IMPORT_DATA_OP
+    IMPORT_DATA_OP,
+    SCHEMA_URL,
+    ENTITY_MODEL_MAP
 )
 
 
@@ -8,13 +12,18 @@ class BaseETLModule(object):
 
     def __init__(self, config, extractor=None, transformer=None, loader=None):
         self.config = config
+
+        validate_on = config['transform'].get('validate_on', True)
+        schemas = self.load_schemas(validate_on)
+
         self.extractor = extractor or self.create_default(
             'extract.extract', 'BaseExtractor')
         self.transformer = transformer or self.create_default(
-            'transform.transform', 'BaseTransformer')
-        self.loader = loader or self.create_loader()
+            'transform.transform', 'BaseTransformer',
+            schemas=schemas, validate_on=validate_on)
+        self.loader = loader or self.create_loader(schemas=schemas)
 
-    def create_default(self, module_name, cls_name):
+    def create_default(self, module_name, cls_name, **kwargs):
         """
         Import and load default ETL class
 
@@ -26,12 +35,31 @@ class BaseETLModule(object):
         module_path = "{0}.{1}".format(prefix_path, module_name)
         mod = import_module(module_path)
         cls = getattr(mod, cls_name)
-        return cls(self.config)
+        return cls(self.config, **kwargs)
 
-    def create_loader(self):
+    def create_loader(self, **kwargs):
         module_name = self.config['load']['use']
         module_name = '{}.{}'.format('load', module_name)
-        return self.create_default(module_name, 'Loader')
+        return self.create_default(module_name, 'Loader', **kwargs)
+
+    def load_schemas(self, validate_on):
+        """
+        Load schemas from dataservice swagger json into a dict
+
+        :param validate_on: If true, ensure that schemas can be loaded
+        """
+        if validate_on:
+            response = requests.get(SCHEMA_URL)
+            if response.status_code > 300:
+                print('Aborting! Could not load enumerations: {}'
+                      .format(response.text))
+                sys.exit()
+        else:
+            return {}
+
+        return {ENTITY_MODEL_MAP[k]: v
+                for k, v in response.json()['definitions'].items()
+                if k in ENTITY_MODEL_MAP}
 
     def run(self, operation=IMPORT_DATA_OP):
         """
@@ -65,7 +93,6 @@ class BaseETLModule(object):
         Delete all data associated with a study identified by the study's
         external_id or kf_id
         """
-        study_params = self.config['drop_data']['study']
-        kwargs = {study_params['attribute']: study_params['value']}
-        print('Deleting study {}...'.format(kwargs))
-        self.loader.drop_all(**kwargs)
+        kf_id = self.config['drop_data']['study']
+        print('Deleting study {}...'.format(kf_id))
+        self.loader.drop_all(kf_id)

@@ -18,9 +18,9 @@ from dataservice.api.family_relationship.models import FamilyRelationship
 
 class Loader(BaseLoader):
 
-    def __init__(self, config, config_name=None):
-        super().__init__(config)
-        if not config_name:
+    def __init__(self, config, **kwargs):
+        super().__init__(config, **kwargs)
+        if not kwargs.get("config_name"):
             config_name = os.environ.get('FLASK_CONFIG', 'default')
         self.setup(config_name)
 
@@ -40,27 +40,27 @@ class Loader(BaseLoader):
         db.session.remove()
         self.app_context.pop()
 
-    def drop_all(self, **kwargs):
+    def drop_all(self, kf_id):
         """
         Delete all data related to a study
         """
         from dataservice.api.study.models import Study
         from dataservice.api.investigator.models import Investigator
 
-        studies = Study.query.filter_by(**kwargs).all()
-        print('Found {} studies matching params {}'
-              .format(len(studies), kwargs))
+        study = Study.query.get(kf_id)
+        if not study:
+            print('Aborting! Could not find study {}'
+                  .format(kf_id))
+            return
+        investigator_id = study.investigator_id
 
-        for study in studies:
-            investigator_id = study.investigator_id
+        # Delete study
+        db.session.delete(study)
 
-            # Delete study
-            db.session.delete(study)
-
-            # Delete investigator
-            if investigator_id:
-                investigator = Investigator.query.get(investigator_id)
-                db.session.delete(investigator)
+        # Delete investigator
+        if investigator_id:
+            investigator = Investigator.query.get(investigator_id)
+            db.session.delete(investigator)
 
         db.session.commit()
 
@@ -124,7 +124,7 @@ class Loader(BaseLoader):
         # Add to session and commit
         self.load_all(entity_type, entities)
         # Save kids first ids
-        self._save_kf_ids(_ids, entity_type, entities)
+        self._save_kf_ids(_ids, [e.kf_id for e in entities], entity_type)
 
     def load_all(self, entity_type, entities):
         """

@@ -37,21 +37,8 @@ properties:
         type: "object"
         properties:
             study:
-                description: "The study's external identifier provided by the contributor"
-                type: "object"
-                properties:
-                    attribute:
-                        type: "string"
-                        description: "The name of the study attribute used to delete the study (i.e. kf_id)"
-                        enum:
-                            - external_id
-                            - kf_id
-                    value:
-                        type: "string"
-                        description: "The value of the study attribute used to identify which study to delete (i.e. ST_00001111)"
-                required:
-                    - attribute
-                    - value
+                description: "The study's Kids First ID"
+                type: "string"
 
         required:
             - study

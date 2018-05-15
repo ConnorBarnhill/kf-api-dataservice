@@ -12,7 +12,7 @@ HARMONIZED_TYPES = {'aligned reads'}
 
 class BaseExtractor(object):
 
-    def __init__(self, config):
+    def __init__(self, config, **kwargs):
         self.config = config
 
     def create_study_file_df(self, filepaths):
@@ -47,20 +47,21 @@ class BaseExtractor(object):
         def func(x):
             x = x.strip()
             if x.endswith('cram') or x.endswith('bam'):
-                val = 'submitted aligned reads'
+                val = 'Aligned Reads'
             elif x.endswith('crai'):
-                val = 'submitted aligned reads index'
+                val = 'Aligned Reads Index'
             elif 'fastq' in x:
-                val = 'submitted reads'
+                val = 'Unaligned Reads'
             elif 'vcf' in x:
-                val = 'simple nucleotide variation'
+                val = 'Simple Nucleotide Variation'
             else:
-                val = None
+                val = 'Other'
             return val
         df['data_type'] = df['file_name'].apply(func)
 
         # Is harmonized
         df['is_harmonized'] = df['data_type'].apply(
-            lambda data_type: True if data_type in HARMONIZED_TYPES else False)
+            lambda data_type: True if data_type.lower()
+            in HARMONIZED_TYPES else False)
 
         return df
