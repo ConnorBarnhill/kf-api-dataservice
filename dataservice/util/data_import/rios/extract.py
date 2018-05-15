@@ -110,7 +110,7 @@ class Extractor(BaseExtractor):
 
         # Decode sex ints to gender strings
         def func(row):
-            _map = {1: "male", 2: "female"}
+            _map = {1: "Male", 2: "Female"}
             return _map[row['Sex']]
         df['Sex'] = df.apply(func, axis=1)
 
@@ -127,9 +127,9 @@ class Extractor(BaseExtractor):
         df['Proband'] = df.apply(func, axis=1)
 
         # Create ethnicity column
-        _map = {'Hispanic': 'hispanic or latino'}
+        _map = {'Hispanic': 'Hispanic or Latino'}
         df['ethnicity'] = df['Race'].apply(
-            lambda x: _map.get(x, 'not hispanic or latino'))
+            lambda x: _map.get(x, 'Not Hispanic or Latino'))
 
         return df
 
@@ -155,8 +155,8 @@ class Extractor(BaseExtractor):
 
         # Add columns
         def func(row):
-            _map = {'affected': 'positive',
-                    'not affected': 'negative'}
+            _map = {'affected': 'Positive',
+                    'not affected': 'Negative'}
             return _map.get(row['affstat'], row['affstat'])
 
         phenotype_df['observed'] = phenotype_df.apply(func, axis=1)

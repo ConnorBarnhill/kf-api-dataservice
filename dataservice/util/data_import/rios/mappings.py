@@ -90,13 +90,14 @@ mappings_dict = {
         "is_proband": {COL_NAME: "proband"},
         "consent_type": {COL_NAME: "consent"},
         "_unique_id_col": {COL_VALUE: "subject_id"},
-        "ethnicity": {COL_NAME: "ethnicity",
-                      COL_VALUE: {"Yes": "hispanic or latino",
-                                  "No": "not hispanic or latino"}},
-
+        "ethnicity": {COL_NAME: "ethnicity"},
         "gender": {COL_NAME: "sex"},
         "race": {COL_NAME: "race",
-                 COL_VALUE: {"More than one race": "other"}},
+                 COL_VALUE: {"More than one race": "Other",
+                             "Caucasian": "White",
+                             "African American": "Black or African American",
+                             "Hispanic": "American Indian or Alaska Native",
+                             }},
         "_links": {
             'family': {
                 'target_fk_col': {COL_VALUE: 'family_id'},
@@ -151,7 +152,7 @@ mappings_dict = {
         "uberon_id_tumor_location": None,
         "ncit_id_diagnosis": None,
         "spatial_descriptor": None,
-        "diagnosis_category": {COL_VALUE: 'structural birth defect'},
+        "diagnosis_category": {COL_VALUE: 'Structural Birth Defect'},
         "_links": {
             'participant': {
                 'target_fk_col': {COL_VALUE: 'participant_id'},

@@ -19,9 +19,9 @@ transform:
   mappings_file: '/Users/singhn4/backup-kf-api-dataservice/dataservice/util/data_import/rios/mappings.py'
 
 load:
-    use: db_load
-    
+    use: kf_dataservice_load
+    # use: db_load
+    kf_dataservice_load:
+        base_url: 'http://localhost:5000'
 drop_data:
-    study:
-        attribute: external_id
-        value: 'phs001410'
+    study: SD_VMK01DZK
