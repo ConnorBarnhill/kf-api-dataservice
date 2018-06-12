@@ -72,6 +72,7 @@ pipeline {
       steps {
         slackSend (color: '#005e99', message: ":deploying_dev: DEPLOYING TO DEVELOPMENT: (${env.BUILD_URL})")
         sh '''
+        aws rds create-db-snapshot --db-instance-identifier kf-dataservice-api-dev --db-snapshot-identifier kf-dataservice-api-dev-$GIT_COMMIT-$BUILD_NUMBER --region us-east-1
         kf-api-dataservice-config/ci-scripts/deploy_stage/deploy.sh dev
         '''
         slackSend (color: '#41aa58', message: ":white_check_mark: DEPLOYED TO DEVELOPMENT: (${env.BUILD_URL})")
