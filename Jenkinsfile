@@ -29,7 +29,7 @@ pipeline {
     stage('Test') {
      steps {
        slackSend (color: '#ddaa00', message: ":construction_worker: kf-api-dataservice TESTING STARTED: (${env.BUILD_URL})")
-       sh "echo 'kf-api-dataservice-config/aws-ecs-service-type-1/ci-scripts/test_stage/test.sh'"
+       sh "kf-api-dataservice-config/aws-ecs-service-type-1/ci-scripts/test_stage/test.sh"
        slackSend (color: '#41aa58', message: ":white_check_mark: kf-api-dataservice TESTING COMPLETED: (${env.BUILD_URL})")
      }
      post {
