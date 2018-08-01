@@ -26,7 +26,8 @@ class GenomicFileSchema(BaseSchema, IndexdFileSchema):
 
         exclude = (BaseSchema.Meta.exclude +
                    ('biospecimen', 'sequencing_experiment',) +
-                   ('cavatica_task_genomic_files', 'read_group',))
+                   ('cavatica_task_genomic_files', 'read_group',
+                    'biospecimen_id', 'sequencing_experiment_id'))
 
     data_type = field_for(GenomicFile, 'data_type',
                           validate=enum_validation_generator(

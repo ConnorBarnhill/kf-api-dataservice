@@ -24,7 +24,7 @@ class PhenotypeSchema(BaseSchema):
         model = Phenotype
         resource_url = 'api.phenotypes'
         collection_url = 'api.phenotypes_list'
-
+        exclude = (BaseSchema.Meta.exclude + ('participant_id',))
     _links = ma.Hyperlinks({
         'self': ma.URLFor(Meta.resource_url, kf_id='<kf_id>'),
         'collection': ma.URLFor(Meta.collection_url),

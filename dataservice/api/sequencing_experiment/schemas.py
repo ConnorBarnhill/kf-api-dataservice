@@ -35,7 +35,7 @@ class SequencingExperimentSchema(BaseSchema):
         collection_url = 'api.sequencing_experiments_list'
         model = SequencingExperiment
         exclude = (BaseSchema.Meta.exclude +
-                   ('sequencing_center', ) +
+                   ('sequencing_center', 'sequencing_center_id') +
                    ('genomic_files', ))
 
     max_insert_size = field_for(SequencingExperiment, 'max_insert_size',

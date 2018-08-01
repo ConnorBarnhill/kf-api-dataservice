@@ -32,7 +32,7 @@ class ReadGroupSchema(BaseSchema):
         collection_url = 'api.read_groups_list'
         model = ReadGroup
         exclude = (BaseSchema.Meta.exclude +
-                   ('genomic_file', ))
+                   ('genomic_file', 'genomic_file_id'))
 
     _links = ma.Hyperlinks({
         'self': ma.URLFor(Meta.resource_url, kf_id='<kf_id>'),

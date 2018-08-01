@@ -19,6 +19,7 @@ class StudyFileSchema(BaseSchema, IndexdFileSchema):
         model = StudyFile
         resource_url = 'api.study_files'
         collection_url = 'api.study_files_list'
+        exclude = (BaseSchema.Meta.exclude + ('study_id',))
 
     study_id = field_for(StudyFile, 'study_id', required=True,
                          load_only=True)

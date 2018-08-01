@@ -28,6 +28,7 @@ class DiagnosisSchema(BaseSchema):
         model = Diagnosis
         resource_url = 'api.diagnoses'
         collection_url = 'api.diagnoses_list'
+        exclude = (BaseSchema.Meta.exclude + ('participant_id',))
 
     _links = ma.Hyperlinks({
         'self': ma.URLFor(Meta.resource_url, kf_id='<kf_id>'),

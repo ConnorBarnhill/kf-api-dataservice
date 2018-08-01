@@ -41,7 +41,8 @@ class ParticipantSchema(BaseSchema):
         collection_url = 'api.participants_list'
         exclude = (BaseSchema.Meta.exclude +
                    ('study', 'family') +
-                   ('diagnoses', 'phenotypes', 'outcomes', 'biospecimens'))
+                   ('diagnoses', 'phenotypes', 'outcomes', 'biospecimens') +
+                   ('study_id', 'family_id'))
 
     _links = ma.Hyperlinks({
         'self': ma.URLFor(Meta.resource_url, kf_id='<kf_id>'),

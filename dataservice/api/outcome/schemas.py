@@ -29,6 +29,7 @@ class OutcomeSchema(BaseSchema):
         model = Outcome
         resource_url = 'api.outcomes'
         collection_url = 'api.outcomes_list'
+        exclude = (BaseSchema.Meta.exclude + ('participant_id',))
 
     _links = ma.Hyperlinks({
         'self': ma.URLFor(Meta.resource_url, kf_id='<kf_id>'),
