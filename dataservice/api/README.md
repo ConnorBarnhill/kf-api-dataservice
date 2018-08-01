@@ -68,7 +68,7 @@ and seperated by an underscore.
 Some examples:
 
  - `PH_CZHXGVPB` - A Phenotype
- - `SA_SN4GWD2Q` - A Sample
+ - `BS_SN4GWD2Q` - A Biospecimen
  - `PT_1AWEK8QD` - A Participant
  - `OC_SBP09501` - An Outcome
 
